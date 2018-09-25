@@ -86,7 +86,28 @@ bool
 CmdParser::moveBufPtr(char* const ptr)
 {
    // TODO...
-   return true;
+   if ( (_readBuf<=ptr)&&(ptr<=_readBufEnd) ){
+      if ( ptr<_readBufPtr ){
+         for ( char* itmptr=_readBufPtr; itmptr>ptr; itmptr-- ){
+            cout<<"\b";
+         }
+      }
+      else if ( ptr==_readBufEnd ){
+         for ( char* itmptr=_readBufPtr; itmptr<_readBufEnd; itmptr++ ){
+            cout<<*itmptr;
+         }
+      }
+      else if ( ptr>_readBufPtr ){
+         moveBufPtr( _readBufEnd );
+         moveBufPtr( ptr );
+      }
+      _readBufPtr = ptr;
+      return true;
+   }
+   else {
+      mybeep();
+      return false;
+   }
 }
 
 
@@ -113,6 +134,8 @@ bool
 CmdParser::deleteChar()
 {
    // TODO...
+   //for (char *i_readBufPtr = _readBufPtr; i<
+   //cou
    return true;
 }
 
@@ -136,6 +159,9 @@ CmdParser::insertChar(char ch, int repeat)
 {
    // TODO...
    assert(repeat >= 1);
+   *_readBufPtr = ch;
+   _readBufEnd += 1;
+   moveBufPtr( _readBufPtr+1 );
 }
 
 // 1. Delete the line that is currently shown on the screen
