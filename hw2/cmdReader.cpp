@@ -46,20 +46,35 @@ CmdParser::readCmdInt(istream& istr)
          case HOME_KEY       : moveBufPtr(_readBuf); break;
          case LINE_END_KEY   :
          case END_KEY        : moveBufPtr(_readBufEnd); break;
-         case BACK_SPACE_KEY : /* TODO */ break;
+         case BACK_SPACE_KEY : /* TODO done */ 
+                               if (_readBufPtr!=_readBuf){
+                                  moveBufPtr(_readBufPtr-1); deleteChar(); 
+                               }
+                               else {
+                                  mybeep();
+                               }
+                               break;
          case DELETE_KEY     : deleteChar(); break;
          case NEWLINE_KEY    : addHistory();
                                cout << char(NEWLINE_KEY);
                                resetBufAndPrintPrompt(); break;
          case ARROW_UP_KEY   : moveToHistory(_historyIdx - 1); break;
          case ARROW_DOWN_KEY : moveToHistory(_historyIdx + 1); break;
-         case ARROW_RIGHT_KEY: /* TODO */ break;
-         case ARROW_LEFT_KEY : /* TODO */ break;
+         case ARROW_RIGHT_KEY: /* TODO done */ 
+                               moveBufPtr(_readBufPtr+1); break;
+         case ARROW_LEFT_KEY : /* TODO done */ 
+                               moveBufPtr(_readBufPtr-1); break;
          case PG_UP_KEY      : moveToHistory(_historyIdx - PG_OFFSET); break;
          case PG_DOWN_KEY    : moveToHistory(_historyIdx + PG_OFFSET); break;
-         case TAB_KEY        : /* TODO */ break;
+         case TAB_KEY        : /* TODO done */ 
+                               {
+                               int res = (_readBufPtr-_readBuf)%TAB_POSITION;
+                               for (int i=0; i!=TAB_POSITION-res; i++)
+                                  insertChar(' ');
+                               }
+                               break;
          case INSERT_KEY     : // not yet supported; fall through to UNDEFINE
-         case UNDEFINED_KEY:   mybeep(); break;
+         case UNDEFINED_KEY  : mybeep(); break;
          default:  // printable character
             insertChar(char(pch)); break;
       }
@@ -85,15 +100,15 @@ CmdParser::readCmdInt(istream& istr)
 bool
 CmdParser::moveBufPtr(char* const ptr)
 {
-   // TODO...
+   // TODO done...
    if ( (_readBuf<=ptr)&&(ptr<=_readBufEnd) ){
-      if ( ptr<_readBufPtr ){
-         for ( char* itmptr=_readBufPtr; itmptr>ptr; itmptr-- ){
+      if ( ptr<=_readBufPtr ){
+         for ( char* itmptr=_readBufPtr; itmptr!=ptr; itmptr-- ){
             cout<<"\b";
          }
       }
       else if ( ptr==_readBufEnd ){
-         for ( char* itmptr=_readBufPtr; itmptr<_readBufEnd; itmptr++ ){
+         for ( char* itmptr=_readBufPtr; itmptr!=_readBufEnd; itmptr++ ){
             cout<<*itmptr;
          }
       }
@@ -133,10 +148,22 @@ CmdParser::moveBufPtr(char* const ptr)
 bool
 CmdParser::deleteChar()
 {
-   // TODO...
-   //for (char *i_readBufPtr = _readBufPtr; i<
-   //cou
-   return true;
+   // TODO done...
+   if (_readBufPtr==_readBufEnd){
+      mybeep();
+      return false;
+   }
+   else {
+      for (char* itmptr=_readBufPtr; itmptr<_readBufEnd; itmptr++){
+         *itmptr=*(itmptr+1);
+      }
+      char* tmp=_readBufPtr;
+      _readBufEnd--;
+      moveBufPtr(_readBufEnd);
+      cout<<" \b";
+      moveBufPtr(tmp);
+      return true;
+   }
 }
 
 // 1. Insert character 'ch' for "repeat" times at _readBufPtr
@@ -159,8 +186,12 @@ CmdParser::insertChar(char ch, int repeat)
 {
    // TODO...
    assert(repeat >= 1);
-   *_readBufPtr = ch;
+   // here is for repeat==1 case
+   for ( char* i=_readBufEnd; i>=_readBufPtr; i--){
+      *(i+1)=*(i);
+   }
    _readBufEnd += 1;
+   *_readBufPtr = ch;
    moveBufPtr( _readBufPtr+1 );
 }
 
