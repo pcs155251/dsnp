@@ -187,12 +187,19 @@ CmdParser::insertChar(char ch, int repeat)
    // TODO...
    assert(repeat >= 1);
    // here is for repeat==1 case
-   for ( char* i=_readBufEnd; i>=_readBufPtr; i--){
-      *(i+1)=*(i);
+   if ( repeat>1 ){
+     insertChar( ch );
+     insertChar( ch, repeat-1 );
    }
-   _readBufEnd += 1;
-   *_readBufPtr = ch;
-   moveBufPtr( _readBufPtr+1 );
+   else {
+     for ( char* i=_readBufEnd; i>=_readBufPtr; i--){
+        *(i+1)=*(i);
+     }
+     _readBufEnd += 1;
+     *_readBufPtr = ch;
+     moveBufPtr( _readBufPtr+1 );
+     //cout<<" "<<_readBufEnd-_readBuf<<" ";
+   }
 }
 
 // 1. Delete the line that is currently shown on the screen
@@ -213,6 +220,14 @@ void
 CmdParser::deleteLine()
 {
    // TODO...
+   int length = _readBufEnd-_readBuf;
+   moveBufPtr( _readBuf );
+   if (length!=0){
+     insertChar( ' ', length );
+     moveBufPtr( _readBuf );
+     _readBufEnd = _readBuf;
+     *_readBufEnd = 0;
+   } else {}
 }
 
 
@@ -238,6 +253,36 @@ void
 CmdParser::moveToHistory(int index)
 {
    // TODO...
+   if (index < _historyIdx){
+      if (_historyIdx==0){
+         mybeep();
+      }
+      else {
+         if (_historyIdx==_history.size()){
+           addHistory();
+           _tempCmdStored = true;
+         } else {}
+         if (index<0){
+            index=0;
+         } else {}
+         deleteLine();
+         cout<<_history[index];
+         _historyIdx = index;
+      }
+   }
+   else {
+      if (_historyIdx==_history.size()){
+         mybeep();
+      }
+      else {
+         if (index>=_history.size()){
+            index=_history.size()-1;
+         } else {}
+         deleteLine();
+         cout<<_history[index];
+         _historyIdx = index;
+      }
+   }
 }
 
 
@@ -257,6 +302,26 @@ void
 CmdParser::addHistory()
 {
    // TODO...
+   char *hstart=NULL, *hend;
+   for (char* i=_readBuf; i!=_readBufEnd; i++){
+      if (*i==' '){}
+      else {
+         hstart=i;
+         break;
+      }
+   }
+   if (hstart!=NULL){
+      for (char* i=_readBufEnd-1; i>=_readBuf; i--){
+         if (*i==' '){}
+         else {
+            hend=i;
+            break;
+         }
+      }
+      _history.push_back( string(hstart,hend+1) );
+   }
+   else {}
+   _historyIdx=_history.size();
 }
 
 
