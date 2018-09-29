@@ -184,7 +184,7 @@ CmdParser::deleteChar()
 void
 CmdParser::insertChar(char ch, int repeat)
 {
-   // TODO...
+   // TODO done...
    assert(repeat >= 1);
    // here is for repeat==1 case
    if ( repeat>1 ){
@@ -198,7 +198,6 @@ CmdParser::insertChar(char ch, int repeat)
      _readBufEnd += 1;
      *_readBufPtr = ch;
      moveBufPtr( _readBufPtr+1 );
-     //cout<<" "<<_readBufEnd-_readBuf<<" ";
    }
 }
 
@@ -219,15 +218,14 @@ CmdParser::insertChar(char ch, int repeat)
 void
 CmdParser::deleteLine()
 {
-   // TODO...
-   int length = _readBufEnd-_readBuf;
-   moveBufPtr( _readBuf );
-   if (length!=0){
-     insertChar( ' ', length );
-     moveBufPtr( _readBuf );
-     _readBufEnd = _readBuf;
-     *_readBufEnd = 0;
-   } else {}
+   // TODO done...
+   if ( _readBufEnd!=_readBuf ){
+      int length = _readBufEnd-_readBuf;
+      moveBufPtr( _readBuf );
+      for (int i=0; i!=length; i++){
+         deleteChar();
+      }
+   }
 }
 
 
@@ -252,35 +250,36 @@ CmdParser::deleteLine()
 void
 CmdParser::moveToHistory(int index)
 {
-   // TODO...
+   // TODO done...
    if (index < _historyIdx){
       if (_historyIdx==0){
          mybeep();
       }
       else {
-         if (_historyIdx==_history.size()){
-           addHistory();
-           _tempCmdStored = true;
+         if (_historyIdx==_history.size()-int(_tempCmdStored)){
+            if (_tempCmdStored==true){
+               _history.pop_back();
+            } else{}
+            _history.push_back( string(_readBuf) );
+            _tempCmdStored = true;
          } else {}
          if (index<0){
             index=0;
          } else {}
-         deleteLine();
-         cout<<_history[index];
          _historyIdx = index;
+         retrieveHistory();
       }
    }
    else {
-      if (_historyIdx==_history.size()){
+      if (_historyIdx==_history.size()-int(_tempCmdStored)){
          mybeep();
       }
       else {
          if (index>=_history.size()){
             index=_history.size()-1;
          } else {}
-         deleteLine();
-         cout<<_history[index];
          _historyIdx = index;
+         retrieveHistory();
       }
    }
 }
@@ -302,23 +301,15 @@ void
 CmdParser::addHistory()
 {
    // TODO...
-   char *hstart=NULL, *hend;
-   for (char* i=_readBuf; i!=_readBufEnd; i++){
-      if (*i==' '){}
-      else {
-         hstart=i;
-         break;
-      }
-   }
-   if (hstart!=NULL){
-      for (char* i=_readBufEnd-1; i>=_readBuf; i--){
-         if (*i==' '){}
-         else {
-            hend=i;
-            break;
-         }
-      }
-      _history.push_back( string(hstart,hend+1) );
+   if (_tempCmdStored){
+      _history.pop_back();
+      _tempCmdStored = false;
+   } else {}
+   string newHis(_readBuf);
+   const auto strBegin = newHis.find_first_not_of(" \t");
+   if (strBegin!=string::npos){
+      const auto strEnd  = newHis.find_last_not_of(" \t");
+      _history.push_back( newHis.substr(strBegin,strEnd-strBegin+1) );
    }
    else {}
    _historyIdx=_history.size();
