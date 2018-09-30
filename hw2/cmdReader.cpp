@@ -256,7 +256,7 @@ CmdParser::moveToHistory(int index)
          mybeep();
       }
       else {
-         if (_historyIdx==_history.size()-int(_tempCmdStored)){
+         if (_historyIdx==int(_history.size())-int(_tempCmdStored)){
             if (_tempCmdStored==true){
                _history.pop_back();
             } else{}
@@ -271,11 +271,11 @@ CmdParser::moveToHistory(int index)
       }
    }
    else {
-      if (_historyIdx==_history.size()-int(_tempCmdStored)){
+      if (_historyIdx==int(_history.size())-int(_tempCmdStored)){
          mybeep();
       }
       else {
-         if (index>=_history.size()){
+         if (index>=int(_history.size())){
             index=_history.size()-1;
          } else {}
          _historyIdx = index;
@@ -300,7 +300,7 @@ CmdParser::moveToHistory(int index)
 void
 CmdParser::addHistory()
 {
-   // TODO...
+   // TODO done...
    if (_tempCmdStored){
       _history.pop_back();
       _tempCmdStored = false;
