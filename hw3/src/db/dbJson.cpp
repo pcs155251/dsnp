@@ -36,6 +36,20 @@ istream& operator >> (istream& is, DBJson& j)
    // - You can assume the input file is with correct JSON file format
    // - NO NEED to handle error file format
    assert(j._obj.empty());
+   string tmp;
+   is>>tmp;
+   while (is>>tmp){
+     if (tmp[0]=='"'){
+       string key( tmp.begin()+1, tmp.end()-1 );
+       is>>tmp;
+       is>>tmp;
+       int value = stoi( tmp );
+       j.add( DBJsonElem( key, value ) );
+     }
+     else {
+       break;
+     }
+   }
 
    return is;
 }
@@ -43,6 +57,12 @@ istream& operator >> (istream& is, DBJson& j)
 ostream& operator << (ostream& os, const DBJson& j)
 {
    // TODO
+   os << "{" << endl;
+   for ( size_t i=0; i!=j._obj.size()-1; i++){
+     os << "  " << j._obj[i] << "," << endl;
+   }
+   os << "  " << j._obj[j._obj.size()-1] << endl;
+   os << "}" << endl;
    return os;
 }
 
@@ -63,6 +83,7 @@ bool
 DBJson::add(const DBJsonElem& elm)
 {
    // TODO
+   _obj.push_back( elm );
    return true;
 }
 
@@ -80,7 +101,14 @@ DBJson::max(size_t& idx) const
 {
    // TODO
    int maxN = INT_MIN;
-   return  maxN;
+   if (_obj.size()==0){
+     idx = _obj.size();
+     return  maxN;
+   }
+   else {
+     for (size_t i=0; i!=_obj.size(); i++){
+     }
+   }
 }
 
 // If DBJson is empty, set idx to size() and return INT_MIN
