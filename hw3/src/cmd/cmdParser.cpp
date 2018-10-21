@@ -30,7 +30,13 @@ CmdParser::openDofile(const string& dof)
 {
    // TODO...
    _dofile = new ifstream(dof.c_str());
-   return true;
+   if (_dofile->is_open()){
+     return true;
+   }
+   else {
+     _dofile = 0;
+     return false;
+   }
 }
 
 // Must make sure _dofile != 0
@@ -98,6 +104,9 @@ void
 CmdParser::printHelps() const
 {
    // TODO...
+   for (auto it=_cmdMap.begin(); it!=_cmdMap.end(); it++){
+      it->second->help();
+   }
 }
 
 void
@@ -140,7 +149,23 @@ CmdParser::parseCmd(string& option)
 
    // TODO...
    assert(str[0] != 0 && str[0] != ' ');
-   return NULL;
+   size_t len = str.find_first_of( ' ' );
+   string cmd;
+   if (len!=string::npos){
+     cmd = string( str.begin(), str.begin()+len );
+     option = string( str.begin()+str.find_first_not_of(' ',len), str.end() );
+     cout<<option<<endl;
+   }
+   else {
+     cmd = str;
+   }
+
+   CmdExec *e = getCmd(cmd);
+   if (e==0){
+     cerr<<"Illegal command!! "<<"("<<cmd<<")"<<endl;
+   }
+
+   return e;
 }
 
 // Remove this function for TODO...
@@ -307,6 +332,14 @@ CmdParser::getCmd(string cmd)
 {
    CmdExec* e = 0;
    // TODO...
+   for (auto it=_cmdMap.begin(); it!=_cmdMap.end(); it++){
+     string cmdRef = it->first + it->second->getOptCmd();
+     unsigned n = it->first.size();
+     if (myStrNCmp( cmdRef, cmd, n )==0){
+       e = it->second;
+       break;
+     }
+   }
    return e;
 }
 

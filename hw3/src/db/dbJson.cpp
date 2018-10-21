@@ -92,31 +92,45 @@ float
 DBJson::ave() const
 {
    // TODO
-   return 0.0;
+   if (_obj.size()==0){
+     return NAN;
+   }
+   else {
+     return float(sum())/float(_obj.size());
+   }
 }
 
 // If DBJson is empty, set idx to size() and return INT_MIN
 int
 DBJson::max(size_t& idx) const
 {
-   // TODO
+   // TODO done
    int maxN = INT_MIN;
    if (_obj.size()==0){
      idx = _obj.size();
-     return  maxN;
    }
    else {
      for (size_t i=0; i!=_obj.size(); i++){
+       maxN = (maxN>_obj[i].value())? maxN:_obj[i].value();
      }
    }
+   return  maxN;
 }
 
 // If DBJson is empty, set idx to size() and return INT_MIN
 int
 DBJson::min(size_t& idx) const
 {
-   // TODO
+   // TODO done
    int minN = INT_MAX;
+   if (_obj.size()==0){
+     idx = _obj.size();
+   }
+   else {
+     for (size_t i=0; i!=_obj.size(); i++){
+       minN = (minN<_obj[i].value())? minN:_obj[i].value();
+     }
+   }
    return  minN;
 }
 
@@ -140,5 +154,12 @@ DBJson::sum() const
 {
    // TODO
    int s = 0;
+   if (_obj.size()==0){
+   }
+   else {
+     for (size_t i=0; i!=_obj.size(); i++){
+       s += _obj[i].value();
+     }
+   }
    return s;
 }
