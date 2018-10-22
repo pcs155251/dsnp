@@ -28,7 +28,7 @@ void mybeep();
 bool
 CmdParser::openDofile(const string& dof)
 {
-   // TODO...
+   // TODO done...
    _dofile = new ifstream(dof.c_str());
    if (_dofile->is_open()){
      return true;
@@ -44,8 +44,10 @@ void
 CmdParser::closeDofile()
 {
    assert(_dofile != 0);
-   // TODO...
+   // TODO done...
+   _dofile->close();
    delete _dofile;
+   _dofile = 0;
 }
 
 // Return false if registration fails
@@ -107,6 +109,7 @@ CmdParser::printHelps() const
    for (auto it=_cmdMap.begin(); it!=_cmdMap.end(); it++){
       it->second->help();
    }
+   cout << endl;
 }
 
 void
@@ -154,7 +157,6 @@ CmdParser::parseCmd(string& option)
    if (len!=string::npos){
      cmd = string( str.begin(), str.begin()+len );
      option = string( str.begin()+str.find_first_not_of(' ',len), str.end() );
-     cout<<option<<endl;
    }
    else {
      cmd = str;

@@ -32,7 +32,7 @@ operator << (ostream& os, const DBJsonElem& j)
 
 istream& operator >> (istream& is, DBJson& j)
 {
-   // TODO: to read in data from Json file and store them in a DB 
+   // TODO done: to read in data from Json file and store them in a DB 
    // - You can assume the input file is with correct JSON file format
    // - NO NEED to handle error file format
    assert(j._obj.empty());
@@ -56,13 +56,14 @@ istream& operator >> (istream& is, DBJson& j)
 
 ostream& operator << (ostream& os, const DBJson& j)
 {
-   // TODO
+   // TODO done
    os << "{" << endl;
    for ( size_t i=0; i!=j._obj.size()-1; i++){
      os << "  " << j._obj[i] << "," << endl;
    }
    os << "  " << j._obj[j._obj.size()-1] << endl;
    os << "}" << endl;
+   os << "Total JSON elements: " << j.size() << endl;
    return os;
 }
 
@@ -75,24 +76,43 @@ ostream& operator << (ostream& os, const DBJson& j)
 void
 DBJson::reset()
 {
-   // TODO
+   // TODO done
+   _obj.clear();
 }
 
 // return false if key is repeated
 bool
 DBJson::add(const DBJsonElem& elm)
 {
-   // TODO
-   _obj.push_back( elm );
+   // TODO done
+   if (find(elm.key())!=_obj.size()){
+     return false;
+   }
+   else {
+     _obj.push_back( elm );
+   }
    return true;
+}
+
+// return the position of the key, if not found return size of vector
+size_t 
+DBJson::find(const string &key) const
+{
+   //TODO done
+   for ( size_t i=0; i!=_obj.size(); i++){
+     if (_obj[i].key()==key ){
+       return i;
+     }
+   }
+   return _obj.size();
 }
 
 // return NAN if DBJson is empty
 float
 DBJson::ave() const
 {
-   // TODO
-   if (_obj.size()==0){
+   // TODO done
+   if (_obj.empty()){
      return NAN;
    }
    else {
@@ -111,7 +131,11 @@ DBJson::max(size_t& idx) const
    }
    else {
      for (size_t i=0; i!=_obj.size(); i++){
-       maxN = (maxN>_obj[i].value())? maxN:_obj[i].value();
+       if (_obj[i].value()>maxN){
+         maxN = _obj[i].value();
+         idx = i;
+       }
+       else {}
      }
    }
    return  maxN;
@@ -123,12 +147,16 @@ DBJson::min(size_t& idx) const
 {
    // TODO done
    int minN = INT_MAX;
-   if (_obj.size()==0){
+   if (_obj.empty()){
      idx = _obj.size();
    }
    else {
      for (size_t i=0; i!=_obj.size(); i++){
-       minN = (minN<_obj[i].value())? minN:_obj[i].value();
+       if (_obj[i].value()<minN){
+         minN = _obj[i].value();
+         idx = i;
+       }
+       else {}
      }
    }
    return  minN;
@@ -154,12 +182,8 @@ DBJson::sum() const
 {
    // TODO
    int s = 0;
-   if (_obj.size()==0){
-   }
-   else {
-     for (size_t i=0; i!=_obj.size(); i++){
-       s += _obj[i].value();
-     }
+   for (size_t i=0; i!=_obj.size(); i++){
+     s += _obj[i].value();
    }
    return s;
 }

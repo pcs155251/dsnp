@@ -49,6 +49,8 @@ public:
    void sort(const DBSortValue&);
    int sum() const;
 
+   size_t find(const string &key) const; // retrun the position of the key, if not found return size of vector
+
    // Basic access functions
    void reset();
    size_t size() const { return _obj.size(); }
@@ -58,9 +60,9 @@ public:
 
    // TODO modify these two functions according to the comments
    // return true if JSON file hasn't been read in
-   bool operator !() { return false; }
+   bool operator !() { return _obj.empty()? true:false; }
    // return this if JSON file has been read in; return NLL if not.
-   operator void* () const { return NULL; }
+   operator const void* () const { return _obj.empty()? NULL:this; }
 
    // Read DBJson
    friend istream& operator >> (istream& is, DBJson& j);

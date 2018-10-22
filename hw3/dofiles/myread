@@ -1,0 +1,6 @@
+dbr tests/test1.json
+dbp
+dbr tests/test2.json
+dbp
+dbr -r tests/test2.json
+dbp

@@ -19,7 +19,21 @@ DBJson dbjson;
 bool
 initDbCmd()
 {
-   // TODO...
+   // TODO done ... 
+   if (!(
+         cmdMgr->regCmd("DBAPpend" , 4, new DBAppendCmd) &&
+         cmdMgr->regCmd("DBAVerage", 4, new DBAveCmd) &&
+         cmdMgr->regCmd("DBCount"  , 3, new DBCountCmd) &&
+         cmdMgr->regCmd("DBMAx"    , 4, new DBMaxCmd) &&
+         cmdMgr->regCmd("DBMIn"    , 4, new DBMinCmd) &&
+         cmdMgr->regCmd("DBPrint"  , 3, new DBPrintCmd) &&
+         cmdMgr->regCmd("DBRead"   , 3, new DBReadCmd) &&
+         cmdMgr->regCmd("DBSOrt"   , 4, new DBSortCmd) &&
+         cmdMgr->regCmd("DBSUm"    , 4, new DBSumCmd)
+      )) {
+      cerr << "Registering \"init\" commands fails... exiting" << endl;
+      return false;
+   }
    return true;
 }
 
@@ -29,8 +43,42 @@ initDbCmd()
 CmdExecStatus
 DBAppendCmd::exec(const string& option)
 {
-   // TODO...
+   
+   //if (!CmdExec::lexSingleOption(option, token))
+   //   return CMD_EXEC_ERROR;
+   //if (token.size()) {
+   //   CmdExec* e = cmdMgr->getCmd(token);
+   //   if (!e) return CmdExec::errorOption(CMD_OPT_ILLEGAL, token);
+   //   e->usage(cout);
+   //}
+   //else
+   //   cmdMgr->printHelps();
+   //return CMD_EXEC_DONE;
+
+   // TODO done...
+   if (!dbjson){
+     cerr << "Error: DB is not created yet!!";
+     return CMD_EXEC_ERROR;
+   } else {}
    // check option
+   vector<string> options;
+   if (!CmdExec::lexOptions(option, options, 2)){
+      return CMD_EXEC_ERROR;
+   } else {}
+
+   if (!isValidVarName(options[0])){
+      return CmdExec::errorOption(CMD_OPT_ILLEGAL, options[0]);
+   } else {}
+   
+   int num;
+   if (!myStr2Int(options[1], num)){
+      return CmdExec::errorOption(CMD_OPT_ILLEGAL, options[1]);
+   } else {}
+
+   if ( !dbjson.add(DBJsonElem( options[0], num )) ){
+     cerr << "Error: Element with key \"" << options[0] << "\" already exists!!" << endl;
+     return CMD_EXEC_ERROR;
+   } else {}
 
    return CMD_EXEC_DONE;
 }
@@ -197,8 +245,30 @@ DBMinCmd::help() const
 CmdExecStatus
 DBPrintCmd::exec(const string& option)
 {  
-   // TODO...
+   // TODO done...
+   if (!dbjson){
+     cerr << "Error: DB is not created yet!!";
+     return CMD_EXEC_ERROR;
+   } else {}
 
+   string key;
+   if (!CmdExec::lexSingleOption(option, key)){
+     return CMD_EXEC_ERROR;
+   } else {}
+
+   if (key.size()==0){
+     cout<<dbjson;
+   } 
+   else{
+     size_t i = dbjson.find(key);
+     if (i==dbjson.size()){
+       cerr << "Error: No JSON element with key \""<< key << "\" is found." << endl;
+       return CMD_EXEC_ERROR;
+     }
+     else {
+       cout << "{ " << dbjson[i] << " }" << endl;
+     }
+   }
    return CMD_EXEC_DONE;
 }
 

@@ -27,3 +27,4 @@ dbp
 dbsort -k
 dbp
 dbsum
+q -f
