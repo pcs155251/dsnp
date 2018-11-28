@@ -128,16 +128,83 @@ public:
      }
      else
      {
-       return false; 
+        return false; 
      }
    }
-   bool erase(const T& x) { return false; }
+   bool erase(const T& x)
+   {
+      iterator i = find(x);
+      if (i!=this->end())
+      {
+         erase(i);
+         return true;
+      }
+      else 
+      {
+         return false;
+      }
+   }
 
-   iterator find(const T& x) { return end(); }
+   iterator find(const T& x)
+   {  
+      iterator i;
+      for (i=this->begin(); i!=this->end(); ++i){
+         if (i._node->_data==x){
+           break;
+         } else {}
+      }
+      return i; 
+   }
 
-   void clear() { }  // delete all nodes except for the dummy node
+   void clear() // delete all nodes except for the dummy node
+   {
+      if (!empty())
+      {  
+         for (iterator i=this->begin(); i!=this->end();)
+         {
+            ++i;
+            delete i._node->_prev;
+         }
+         _head->_prev = _head->_next = _head;
+      } else {}
+   }
 
-   void sort() const { }
+   void sort() 
+   { 
+      if (_isSorted)
+      {
+      }  
+      else 
+      {
+         iterator min = this->begin();
+         for (iterator i=this->begin(); i!=this->end(); ++i)
+         {
+            if(i._node->_data < min._node->_data)
+            {
+               min = i;
+            }
+         }
+         push_back( min._node->_data );
+         erase( min );
+         iterator ref( _head->_prev );
+         
+         while (ref!=this->begin())
+         {
+            min = this->begin();
+            for (iterator i=this->begin(); i!=ref; ++i)
+            {
+               if(i._node->_data < min._node->_data)
+               {
+                  min = i;
+               }
+            }
+            push_back( min._node->_data );
+            erase( min );
+         }
+          
+         _isSorted = true;
+      }
+   }
 
 private:
    // [NOTE] DO NOT ADD or REMOVE any data member
