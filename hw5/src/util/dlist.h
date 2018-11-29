@@ -75,7 +75,7 @@ public:
    // TODO: implement these functions
    iterator begin() const { return iterator(_head->_next); }
    iterator end() const { return iterator(_head); }
-   bool empty() const { return (_head->_prev==_head&&_head->_next==_head); }
+   bool empty() const { return (_head->_prev==_head); }
    size_t size() const 
    {  
       size_t count=0;
@@ -84,7 +84,7 @@ public:
       }
       return count; 
    }
-   void push_back(const T& x)
+   void push_back (const T& x) 
    { 
       DListNode<T>* back = new DListNode<T>( x, _head->_prev, _head );
       _head->_prev->_next = back;
@@ -99,7 +99,6 @@ public:
         _head->_next = front->_next;
         _head->_next->_prev = _head;
         delete front;
-        _isSorted = false;
       }
       else {}
    }
@@ -111,13 +110,12 @@ public:
         _head->_prev = back->_prev;
         _head->_prev->_next = _head;
         delete back;
-        _isSorted = false;
       }
       else {}
    }
 
    // return false if nothing to erase
-   bool erase(iterator pos)
+   bool erase(iterator pos) 
    { 
      if (!empty())
      {
@@ -171,10 +169,10 @@ public:
 
    void sort() 
    { 
-      if (_isSorted)
+      if (empty())
       {
       }  
-      else 
+      else if (!_isSorted)
       {
          iterator min = this->begin();
          for (iterator i=this->begin(); i!=this->end(); ++i)
@@ -204,6 +202,7 @@ public:
           
          _isSorted = true;
       }
+      else {}
    }
 
 private:
