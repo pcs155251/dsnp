@@ -42,7 +42,7 @@ public:
       iterator& operator -- () { --_node; return (*this); }
       iterator operator -- (int) { iterator tmp(*this); --(*this); return tmp; }
 
-      iterator operator + (int i) const { iterator tmp(this->_node+i); return tmp; }
+      iterator operator + (int i) const { iterator tmp((this->_node)+i); return tmp; }
       iterator& operator += (int i) { (*this) = (*this)+i; return (*this); }
 
       iterator& operator = (const iterator& i) { (*this) = i; return (*this); }
@@ -60,8 +60,8 @@ public:
    bool empty() const { return (_size==0); }
    size_t size() const { return _size; }
 
-   T& operator [] (size_t i) { return _data[i]; }
-   const T& operator [] (size_t i) const { return _data[i]; }
+   T& operator [] (size_t i) { return *(_data+i); }
+   const T& operator [] (size_t i) const { return *(_data+i); }
 
    void push_back(const T& x)
    { 
@@ -80,7 +80,7 @@ public:
       }
       else //enlarge _capacity
       {
-         T* tmp = new T[2*_size];
+         T* tmp = new T[2*_capacity];
          for (size_t i=0; i!=_size; ++i)
          {
             tmp[i] = _data[i];
@@ -95,15 +95,15 @@ public:
    }
    void pop_front()
    { 
-      if (!empty())
+      if (_size!=0)
       {
-         _data[0] = _data[_size-1];
+         *(_data) = *(_data+_size-1);
          --_size;
       } else {}
    }
    void pop_back()
    { 
-      if (!empty())
+      if (_size!=0)
       {
          --_size;
       } else {}
@@ -111,7 +111,7 @@ public:
 
    bool erase(iterator pos) 
    { 
-     if (empty())
+     if (_size==0)
      {
         return false; 
      }
@@ -143,30 +143,27 @@ public:
       for (; i!=this->end(); ++i)
       {
           if (*(i._node)==x)
-          {
              break;
-          }  else {}
+          else {}
       }
       return i;
    }
 
    void clear() 
    { 
-      delete [] _data;
-      _data = 0;
       _size = 0;
    }
 
    // [Optional TODO] Feel free to change, but DO NOT change ::sort()
    void sort() const 
    { 
-     if (!empty()) {}
+     if (_size==0) {}
      else if (!_isSorted)
      {
        ::sort(_data, _data+_size); 
-       _isSorted=true;
      }
      else {}
+     _isSorted=true;
    }
 
    // Nice to have, but not required in this homework...
