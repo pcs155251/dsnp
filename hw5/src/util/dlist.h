@@ -65,7 +65,7 @@ public:
 
       iterator& operator = (const iterator& i) { _node = i._node; return *(this); }
 
-      bool operator == (const iterator& i) const { return ((this->_node->_data==i._node->_data)&&(this->_node->_prev==i._node->_prev)&&(this->_node->_next&&i._node->_next)); }
+      bool operator == (const iterator& i) const { return (this->_node==i._node); }
       bool operator != (const iterator& i) const { return !(*(this)==i); }
 
    private:

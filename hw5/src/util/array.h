@@ -48,7 +48,7 @@ public:
       iterator& operator = (const iterator& i) { (*this) = i; return (*this); }
 
       bool operator != (const iterator& i) const { return !(*this==i); }
-      bool operator == (const iterator& i) const { return *(this->_node)==*(i._node); }
+      bool operator == (const iterator& i) const { return (this->_node==i._node); }
 
    private:
       T*    _node;
@@ -117,9 +117,10 @@ public:
      }
      else
      {
-        *(pos._node) = *(_data+_size-1);
-        --_size;
-        return true;
+         *(pos._node) = *(_data+_size-1);
+         --_size;
+         _isSorted=false;
+         return true;
      }
    }
    bool erase(const T& x) 
@@ -133,6 +134,7 @@ public:
       {
          *(pos._node) = *(_data+_size-1);
          --_size;
+         _isSorted=false;
          return true;
       }
    }
