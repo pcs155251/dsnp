@@ -30,7 +30,6 @@ class BSTreeNode
       _data(d), _parent(p), _left(l), _right(r) {}
 
    T _data;
-   size_t _copy = 0;
    BSTreeNode<T>* _parent;
    BSTreeNode<T>* _left;
    BSTreeNode<T>* _right;
@@ -122,8 +121,8 @@ public:
       friend class BSTree;
 
    public:
-      iterator(BSTreeNode<T>* np, BSTreeNode<T>* rp ): _node(np), _root(rp), _copy(0){ if (np!=0) _copy=np->_copy; _number=1;}
-      iterator(const iterator& i) : _node(i._node), _root(i._root), _copy(_node->_copy) {}
+      iterator(BSTreeNode<T>* np, BSTreeNode<T>* rp ): _node(np), _root(rp){ }
+      iterator(const iterator& i) : _node(i._node), _root(i._root) {}
       ~iterator() {} // Should NOT delete _node
 
       // TODO: implement these overloaded operators
@@ -133,22 +132,13 @@ public:
       { 
          if (this->_node!=0)
          {
-            if (_number==_copy)
+            if (_node->_right!=0)
             {
-               if (_node->_right!=0)
-               {
-                  _node = _node->succ();
-               }
-               else 
-               {
-                  _node = _node->lparent();
-               }
-               _copy = _node->_copy;
-               _number = 1;
+               _node = _node->succ();
             }
-            else
-            { 
-               ++_number;
+            else 
+            {
+               _node = _node->lparent();
             }
          }
          return *this;
@@ -158,35 +148,24 @@ public:
       { 
          if (this->_node!=0)
          {
-            if (_number==0)
+            if (_node->_left!=0)
             {
-               if (_node->_left!=0)
-               {
-                  _node = _node->pred();
-               }
-               else
-               {
-                  _node = _node->rparent();
-               }
-               _copy = _node->_copy;
-               _number = _node->_copy;
+               _node = _node->pred();
             }
             else
             {
-               --_number;
+               _node = _node->rparent();
             }
          }
          else 
          {
             _node = _root->max();
-            _copy = _node->_copy;
-            _number = _node->_copy;
          }
          return *this;
       }
       iterator operator -- (int) { iterator tmp(_node,_root); --(*(this)); return tmp; }
 
-      iterator& operator = (const iterator& i) { _node = i._node; _root = i._root; _copy=i._copy; _number=i._number; return *(this); }
+      iterator& operator = (const iterator& i) { _node = i._node; _root = i._root; return *(this); }
 
       bool operator == (const iterator& i) const { return (this->_node==i._node&&this->_root==i._root); }
       bool operator != (const iterator& i) const { return !(*this==i); }
@@ -194,8 +173,6 @@ public:
    private:
       BSTreeNode<T>* _node;
       BSTreeNode<T>* _root;
-      size_t _copy = 0;
-      size_t _number;
    };
    // TODO: implement these functions
    iterator begin() const { if (_root!=0) return iterator(_root->min(),_root); else return iterator(0,_root); }//todo
@@ -241,77 +218,65 @@ public:
          }
          else if (pos._node->_left==0&&pos._node->_right==0)//leaf
          {
-            --(pos._node->_copy);
-            if (pos._node->_copy==0)
+            if (pos._node->_parent!=0)
             {
-               if (pos._node->_parent!=0)
+               if (pos._node->_parent->_left==pos._node)
                {
-                  if (pos._node->_parent->_left==pos._node)
-                  {
-                     pos._node->_parent->_left=0;
-                  }
-                  else
-                  {
-                     pos._node->_parent->_right=0;
-                  }  
-                  delete pos._node;
+                  pos._node->_parent->_left=0;
                }
-               else //only one node, root
+               else
                {
-                  delete _root;
-                  _root = 0;
-               }
-            } else {}
+                  pos._node->_parent->_right=0;
+               }  
+               delete pos._node;
+            }
+            else //only one node, root
+            {
+               delete _root;
+               _root = 0;
+            }
             --_size;
          }
          else if (pos._node->_right==0)
          {
-            --(pos._node->_copy);
-            if (pos._node->_copy==0)
+            pos._node->_left->_parent = pos._node->_parent;
+            if (pos._node->_parent!=0)
             {
-               pos._node->_left->_parent = pos._node->_parent;
-               if (pos._node->_parent!=0)
+               if (pos._node->_parent->_left==pos._node)
                {
-                  if (pos._node->_parent->_left==pos._node)
-                  {
-                     pos._node->_parent->_left=pos._node->_left;
-                  }
-                  else
-                  {
-                     pos._node->_parent->_right=pos._node->_left;
-                  }  
-               }  
-               else 
-               {
-                  _root = pos._node->_left;
+                  pos._node->_parent->_left=pos._node->_left;
                }
-               delete pos._node;
-            } else {}
+               else
+               {
+                  pos._node->_parent->_right=pos._node->_left;
+               }  
+            }  
+            else 
+            {
+               _root = pos._node->_left;
+            }
+            delete pos._node;
             --_size;
          }
          else
          {
-            --(pos._node->_copy);
-            if (pos._node->_copy==0)
+            pos._node->_right->_parent = pos._node->_parent;
+            if (pos._node->_parent!=0)
             {
-               pos._node->_right->_parent = pos._node->_parent;
-               if (pos._node->_parent!=0)
+               if (pos._node->_parent->_left==pos._node)
                {
-                  if (pos._node->_parent->_left==pos._node)
-                  {
-                     pos._node->_parent->_left=pos._node->_right;
-                  }
-                  else
-                  {
-                     pos._node->_parent->_right=pos._node->_right;
-                  }  
-               }  
+                  pos._node->_parent->_left=pos._node->_right;
+               }
                else
                {
-                  _root = pos._node->_right;
-               }
-               delete pos._node;
-            } else {}
+                  pos._node->_parent->_right=pos._node->_right;
+               }  
+            }  
+            else
+            {
+               _root = pos._node->_right;
+            }
+            delete pos._node;
             --_size;
          }
          return true;
@@ -337,7 +302,7 @@ public:
       {
          iterator tmp = i;
          ++i;
-         erase( tmp );
+         delete tmp._node;
       }
       _root=0;
       _size=0;
@@ -356,14 +321,12 @@ private:
       if (node==0)
       {
          node = new BSTreeNode<T>(x);
-         ++(node->_copy);
       }
       else if (x==node->_data)
       {
          BSTreeNode<T>* oldnode = node;
          node = new BSTreeNode<T>(x,node->_parent,oldnode,0);
          oldnode->_parent=node;
-         ++(node->_copy);
       }
       else if (x<node->_data)
       {

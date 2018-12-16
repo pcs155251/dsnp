@@ -62,7 +62,7 @@ public:
    // return true if JSON file hasn't been read in
    bool operator !() { return _obj.empty()? true:false; }
    // return this if JSON file has been read in; return NLL if not.
-   operator const void* () const { return _obj.empty()? NULL:this; }
+   operator void* () const { return _obj.empty()? NULL:(void*)this; }
 
    // Read DBJson
    friend istream& operator >> (istream& is, DBJson& j);

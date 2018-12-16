@@ -29,12 +29,16 @@ bool
 CmdParser::openDofile(const string& dof)
 {
    // TODO done...
+   if (_dofile!=0){
+     _dofileStack.push( _dofile );
+   } else {}
+
    _dofile = new ifstream(dof.c_str());
    if (_dofile->is_open()){
      return true;
    }
    else {
-     _dofile = 0;
+     closeDofile();
      return false;
    }
 }
@@ -45,9 +49,14 @@ CmdParser::closeDofile()
 {
    assert(_dofile != 0);
    // TODO done...
-   _dofile->close();
    delete _dofile;
-   _dofile = 0;
+   if (_dofileStack.empty()){
+     _dofile = 0;
+   }
+   else {
+     _dofile = _dofileStack.top();
+     _dofileStack.pop();
+   }
 }
 
 // Return false if registration fails

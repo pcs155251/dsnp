@@ -1,4 +1,4 @@
 help
 do t
-do do2
+do ../dofiles/do2
 his
