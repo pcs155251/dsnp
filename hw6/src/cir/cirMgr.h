@@ -43,6 +43,7 @@ public:
    void writeAag(ostream&) const;
 
 private:
+   vector<CirGate*> pins;
 };
 
 #endif // CIR_MGR_H

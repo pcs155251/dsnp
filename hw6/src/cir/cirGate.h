@@ -30,7 +30,7 @@ public:
 
    // Basic access methods
    string getTypeStr() const { return ""; }
-   unsigned getLineNo() const { return 0; }
+   unsigned getLineNo() const { return lineNo; }
 
    // Printing functions
    virtual void printGate() const = 0;
@@ -38,10 +38,42 @@ public:
    void reportFanin(int level) const;
    void reportFanout(int level) const;
 
+   //my
+
 private:
+   unsigned lineNo;
+
+   //my
+   string name;
 
 protected:
+   //my
+   vector<CirGate*> fin;
+   vector<CirGate*> fout;
 
 };
+
+class CirPiGate: public CirGate
+{
+public:
+   CirPiGate() {}
+   ~CirPiGate() {}
+   virtual void printGate(){};
+private:
+};
+
+/*
+class CirPoGate: public cirGate
+{
+public:
+private:
+}
+
+class CirAigGate: public cirGate
+{
+public:
+private:
+}
+*/
 
 #endif // CIR_GATE_H
