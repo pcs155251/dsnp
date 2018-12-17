@@ -187,14 +187,13 @@ CirMgr::readCircuit(const string& fileName)
    pins.push_back( new CirPiGate(1,1,"a") );
    pins.push_back( new CirPiGate(2,9,"b") );
    pins.push_back( new CirPiGate(3,2,"c") );
-   pins.push_back( new CirPiGate(4,10,"d") );
+   pins.push_back( new CirPiGate(4,10,"") );
    cout<<"before"<<endl;
    for ( vector<CirGate*>::iterator it=pins.begin(); it!=pins.end(); ++it )
    {
       cout<<(*it)->getId()<<endl;
    }
    sort( pins.begin(), pins.end(), compareGateGate );
-   //sort( pins.begin(), pins.end() );
    cout<<"after"<<endl;
    for ( vector<CirGate*>::iterator it=pins.begin(); it!=pins.end(); ++it )
    {

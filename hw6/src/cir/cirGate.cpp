@@ -24,9 +24,16 @@ extern CirMgr *cirMgr;
 /**************************************/
 /*   class CirGate member functions   */
 /**************************************/
+
+vector<string> CirGate::typeString = vector<string> { "UNDEF", "PI", "PO", "AIG", "CONST" };
+
 void
 CirGate::reportGate() const
 {
+   //TODO add right =
+   cout<<"================================================== "<<endl;
+   cout<<"= "<<typeString[typeId]<<"("<<this->gid<<")"<<getNameStr()<<", line "<<this->getLineNo()<<endl;
+   cout<<"================================================== "<<endl;
 }
 
 void
@@ -48,22 +55,3 @@ void
 CirPiGate::printGate() const
 {
 }
-
-void
-CirPiGate::reportGate() const
-{
-   cout<<"test for pi"<<endl;
-}
-
-void
-CirPiGate::reportFanin(int level) const
-{
-   assert (level >= 0);
-}
-
-void
-CirPiGate::reportFanout(int level) const
-{
-   assert (level >= 0);
-}
-
