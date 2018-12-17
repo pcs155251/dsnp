@@ -41,3 +41,29 @@ CirGate::reportFanout(int level) const
    assert (level >= 0);
 }
 
+/**************************************/
+/*   class CirPiGate member functions   */
+/**************************************/
+void
+CirPiGate::printGate() const
+{
+}
+
+void
+CirPiGate::reportGate() const
+{
+   cout<<"test for pi"<<endl;
+}
+
+void
+CirPiGate::reportFanin(int level) const
+{
+   assert (level >= 0);
+}
+
+void
+CirPiGate::reportFanout(int level) const
+{
+   assert (level >= 0);
+}
+

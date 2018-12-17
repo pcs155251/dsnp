@@ -15,6 +15,7 @@
 #include "cirMgr.h"
 #include "cirGate.h"
 #include "util.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -145,12 +146,62 @@ parseError(CirParseError err)
    return false;
 }
 
+//for sorting gate
+bool
+compareGateId( const CirGate* g0, unsigned g1Id )
+{
+   return ( g0->getId() < g1Id );
+}
+
+bool
+compareGateGate( const CirGate* g0, const CirGate* g1 )
+{
+   return ( g0->getId() < g1->getId() );
+}
+
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
+CirGate* 
+CirMgr::getGate(unsigned gid) 
+{ 
+   //TODO make sure is sorted before getGate
+   //TODO may have problem when declaring as const functions
+   vector<CirGate*>::iterator pos = lower_bound( pins.begin(), pins.end(), gid, compareGateId);
+   if ( pos==pins.end() || (*pos)->getId()!=gid )
+   {
+      return 0;
+   }
+   else
+   {
+      return (*pos);
+   }
+}
+
 bool
 CirMgr::readCircuit(const string& fileName)
 {
+   //TODO
+   //should read all gate and sort here
+   cout<<"readCircuit, test"<<endl;
+   pins.push_back( new CirPiGate(1,1,"a") );
+   pins.push_back( new CirPiGate(2,9,"b") );
+   pins.push_back( new CirPiGate(3,2,"c") );
+   pins.push_back( new CirPiGate(4,10,"d") );
+   cout<<"before"<<endl;
+   for ( vector<CirGate*>::iterator it=pins.begin(); it!=pins.end(); ++it )
+   {
+      cout<<(*it)->getId()<<endl;
+   }
+   sort( pins.begin(), pins.end(), compareGateGate );
+   //sort( pins.begin(), pins.end() );
+   cout<<"after"<<endl;
+   for ( vector<CirGate*>::iterator it=pins.begin(); it!=pins.end(); ++it )
+   {
+      cout<<(*it)->getId()<<endl;
+   }
+
+
    return true;
 }
 

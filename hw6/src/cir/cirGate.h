@@ -25,41 +25,46 @@ class CirGate;
 class CirGate
 {
 public:
+   CirGate(unsigned lineNoIn, unsigned idIn): gid(idIn), lineNo(lineNoIn) {}
    CirGate() {}
    virtual ~CirGate() {}
 
    // Basic access methods
    string getTypeStr() const { return ""; }
    unsigned getLineNo() const { return lineNo; }
+   //my
+   unsigned getId() const { return gid; }
 
    // Printing functions
    virtual void printGate() const = 0;
-   void reportGate() const;
-   void reportFanin(int level) const;
-   void reportFanout(int level) const;
-
-   //my
+   virtual void reportGate() const;
+   virtual void reportFanin(int level) const;
+   virtual void reportFanout(int level) const;
 
 private:
    unsigned lineNo;
 
    //my
-   string name;
 
 protected:
    //my
-   vector<CirGate*> fin;
-   vector<CirGate*> fout;
+   unsigned gid;
 
 };
 
 class CirPiGate: public CirGate
 {
 public:
+   CirPiGate(unsigned lineNoIn, unsigned gidIn, string nameIn): CirGate(lineNoIn, gidIn), name(nameIn) {}
    CirPiGate() {}
    ~CirPiGate() {}
-   virtual void printGate(){};
+   virtual void printGate() const;
+   virtual void reportGate() const;
+   virtual void reportFanin(int level) const;
+   virtual void reportFanout(int level) const;
 private:
+   string name;
+   vector<CirGate*> fout;
 };
 
 /*
