@@ -49,9 +49,33 @@ CirGate::reportFanout(int level) const
 }
 
 /**************************************/
-/*   class CirPiGate member functions   */
+/*   class CirPiGate member functions */
 /**************************************/
 void
 CirPiGate::printGate() const
+{
+}
+
+/**************************************/
+/*   class CirPoGate member functions */
+/**************************************/
+void
+CirPoGate::printGate() const
+{
+}
+
+/**************************************/
+/*   class CirAigGate member functions*/
+/**************************************/
+void
+CirAigGate::printGate() const
+{
+}
+
+/**************************************/
+/*   class CirConGate member functions*/
+/**************************************/
+void
+CirConGate::printGate() const
 {
 }

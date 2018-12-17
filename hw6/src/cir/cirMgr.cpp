@@ -167,8 +167,8 @@ CirMgr::getGate(unsigned gid)
 { 
    //TODO make sure is sorted before getGate
    //TODO may have problem when declaring as const functions
-   vector<CirGate*>::iterator pos = lower_bound( pins.begin(), pins.end(), gid, compareGateId);
-   if ( pos==pins.end() || (*pos)->getId()!=gid )
+   vector<CirGate*>::iterator pos = lower_bound( gates.begin(), gates.end(), gid, compareGateId);
+   if ( pos==gates.end() || (*pos)->getId()!=gid )
    {
       return 0;
    }
@@ -184,22 +184,48 @@ CirMgr::readCircuit(const string& fileName)
    //TODO
    //should read all gate and sort here
    cout<<"readCircuit, test"<<endl;
-   pins.push_back( new CirPiGate(1,1,"a") );
-   pins.push_back( new CirPiGate(2,9,"b") );
-   pins.push_back( new CirPiGate(3,2,"c") );
-   pins.push_back( new CirPiGate(4,10,"") );
-   cout<<"before"<<endl;
-   for ( vector<CirGate*>::iterator it=pins.begin(); it!=pins.end(); ++it )
-   {
-      cout<<(*it)->getId()<<endl;
-   }
-   sort( pins.begin(), pins.end(), compareGateGate );
-   cout<<"after"<<endl;
-   for ( vector<CirGate*>::iterator it=pins.begin(); it!=pins.end(); ++it )
-   {
-      cout<<(*it)->getId()<<endl;
-   }
+   gates.reserve(23);
+   
+   CirPiGate* tmpPi;
+   tmpPi = new CirPiGate(2,1);
+   gates.push_back( tmpPi );
+   pins.push_back( tmpPi );
 
+   tmpPi = new CirPiGate(3,2);
+   gates.push_back( tmpPi );
+   pins.push_back( tmpPi );
+
+   tmpPi = new CirPiGate(4,6);
+   gates.push_back( tmpPi );
+   pins.push_back( tmpPi );
+
+   tmpPi = new CirPiGate(5,7);
+   gates.push_back( tmpPi );
+   pins.push_back( tmpPi );
+
+
+   CirPoGate* tmpPo;
+   tmpPo = new CirPoGate(6,24); //connect to 22
+   gates.push_back( tmpPo );
+   pouts.push_back( tmpPo );
+   tmpPo = new CirPoGate(7,25); //connect to 23
+   gates.push_back( tmpPo );
+   pouts.push_back( tmpPo );
+
+
+   gates.push_back( new CirAigGate( 8,10) );
+   gates.push_back( new CirAigGate( 9,11) );
+   gates.push_back( new CirAigGate(10,16) );
+   gates.push_back( new CirAigGate(11,22) );
+   gates.push_back( new CirAigGate(12,19) );
+   gates.push_back( new CirAigGate(13,23) );
+   gates.push_back( new CirConGate(8) );
+
+   //start connecting
+
+
+
+   sort( gates.begin(), gates.end(), compareGateGate );
 
    return true;
 }

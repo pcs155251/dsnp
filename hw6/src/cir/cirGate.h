@@ -41,6 +41,7 @@ public:
 
    //my
    unsigned getId() const { return gid; }
+   void setNameStr( const string& nameIn ) { name = nameIn; }
    string getNameStr() const 
    {
       if (name!="")
@@ -52,6 +53,8 @@ public:
          return "";
       }
    }
+   void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> ( ifNotVert, in) ); }
+   void addFout(CirGate* out) { fouts.push_back(out); }
 
 
 private:
@@ -65,18 +68,17 @@ private:
 protected:
    //my
    //for derived class constructor
-   CirGate(unsigned lineNoIn, unsigned gidIn, unsigned typeIdIn, string nameIn): lineNo(lineNoIn), gid(gidIn), typeId(typeIdIn), name(nameIn) {}
+   CirGate(unsigned lineNoIn, unsigned gidIn, unsigned typeIdIn): lineNo(lineNoIn), gid(gidIn), typeId(typeIdIn) {}
    string name;
    //my uninitialized memebers
-   vector<pair<bool,CirGate*>> fin;
-   vector<CirGate*> fout;
-
+   vector<pair<bool,CirGate*>> fins;
+   vector<CirGate*> fouts;
 };
 
 class CirPiGate: public CirGate
 {
 public:
-   CirPiGate(unsigned lineNoIn, unsigned gidIn, string nameIn): CirGate(lineNoIn, gidIn, 1, nameIn) {}
+   CirPiGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn, 1) {} 
    CirPiGate() {}
    ~CirPiGate() {}
    virtual void printGate() const;
@@ -86,6 +88,7 @@ private:
 class CirPoGate: public CirGate
 {
 public:
+   CirPoGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn, 2) { fins.reserve(1); }
    CirPoGate() {}
    ~CirPoGate() {}
    virtual void printGate() const;
@@ -95,8 +98,19 @@ private:
 class CirAigGate: public CirGate
 {
 public:
+   CirAigGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn, 3) { fins.reserve(2); }
    CirAigGate() {}
    ~CirAigGate() {}
+   virtual void printGate() const;
+private:
+};
+
+class CirConGate: public CirGate
+{
+public:
+   CirConGate(unsigned lineNoIn): CirGate(lineNoIn, 0, 4) {}
+   CirConGate() {}
+   ~CirConGate() {}
    virtual void printGate() const;
 private:
 };

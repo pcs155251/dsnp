@@ -44,7 +44,9 @@ public:
 
 private:
    //my
+   vector<CirGate*> gates;
    vector<CirGate*> pins;
+   vector<CirGate*> pouts;
 };
 
 #endif // CIR_MGR_H
