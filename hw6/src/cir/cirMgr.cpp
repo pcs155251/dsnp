@@ -186,46 +186,102 @@ CirMgr::readCircuit(const string& fileName)
    cout<<"readCircuit, test"<<endl;
    gates.reserve(23);
    
-   CirPiGate* tmpPi;
-   tmpPi = new CirPiGate(2,1);
-   gates.push_back( tmpPi );
-   pins.push_back( tmpPi );
+   CirGate* tmp;
+   tmp = new CirPiGate(2,1);
+   gates.push_back( tmp );
+   pins.push_back( tmp );
 
-   tmpPi = new CirPiGate(3,2);
-   gates.push_back( tmpPi );
-   pins.push_back( tmpPi );
+   tmp = new CirPiGate(3,2);
+   gates.push_back( tmp );
+   pins.push_back( tmp );
 
-   tmpPi = new CirPiGate(4,6);
-   gates.push_back( tmpPi );
-   pins.push_back( tmpPi );
+   tmp = new CirPiGate(4,6);
+   gates.push_back( tmp );
+   pins.push_back( tmp );
 
-   tmpPi = new CirPiGate(5,7);
-   gates.push_back( tmpPi );
-   pins.push_back( tmpPi );
+   tmp = new CirPiGate(5,7);
+   gates.push_back( tmp );
+   pins.push_back( tmp );
 
+   tmp = new CirPoGate(6,24); //connect to 22
+   gates.push_back( tmp );
+   pouts.push_back( tmp );
+   tmp = new CirPoGate(7,25); //connect to 23
+   gates.push_back( tmp );
+   pouts.push_back( tmp );
 
-   CirPoGate* tmpPo;
-   tmpPo = new CirPoGate(6,24); //connect to 22
-   gates.push_back( tmpPo );
-   pouts.push_back( tmpPo );
-   tmpPo = new CirPoGate(7,25); //connect to 23
-   gates.push_back( tmpPo );
-   pouts.push_back( tmpPo );
+   
+   tmp = new CirAigGate( 8,10);
+   gates.push_back( tmp );
+   aigs.push_back( tmp );
+   tmp = new CirAigGate( 9,11);
+   gates.push_back( tmp );
+   aigs.push_back( tmp );
+   tmp = new CirAigGate(10,16);
+   gates.push_back( tmp );
+   aigs.push_back( tmp );
+   tmp = new CirAigGate(11,22);
+   gates.push_back( tmp );
+   aigs.push_back( tmp );
+   tmp = new CirAigGate(12,19);
+   gates.push_back( tmp );
+   aigs.push_back( tmp );
+   tmp = new CirAigGate(13,23);
+   gates.push_back( tmp );
+   aigs.push_back( tmp );
+   
+   tmp = new CirConGate(8);
+   gates.push_back( tmp );
 
-
-   gates.push_back( new CirAigGate( 8,10) );
-   gates.push_back( new CirAigGate( 9,11) );
-   gates.push_back( new CirAigGate(10,16) );
-   gates.push_back( new CirAigGate(11,22) );
-   gates.push_back( new CirAigGate(12,19) );
-   gates.push_back( new CirAigGate(13,23) );
-   gates.push_back( new CirConGate(8) );
-
-   //start connecting
-
-
+   tmp = new CirFloGate(12,15);
+   gates.push_back( tmp );
+   floats.push_back( tmp );
 
    sort( gates.begin(), gates.end(), compareGateGate );
+
+   //start connecting
+   //connecting from out
+   getGate(22)->addFout(getGate(24));
+   getGate(23)->addFout(getGate(25));
+   getGate(24)->addFin(false,getGate(22));
+   getGate(25)->addFin(false,getGate(23));
+   //connecting and
+   getGate(1)->addFout(getGate(10));
+   getGate(0)->addFout(getGate(10));
+   getGate(10)->addFin(true,getGate(1));
+   getGate(10)->addFin(false,getGate(0));
+
+   getGate(1)->addFout(getGate(11));
+   getGate(6)->addFout(getGate(11));
+   getGate(11)->addFin(false,getGate(1));
+   getGate(11)->addFin(true,getGate(6));
+
+   getGate(2)->addFout(getGate(16));
+   getGate(11)->addFout(getGate(16));
+   getGate(16)->addFin(true,getGate(2));
+   getGate(16)->addFin(false,getGate(11));
+
+   getGate(10)->addFout(getGate(22));
+   getGate(16)->addFout(getGate(22));
+   getGate(22)->addFin(false,getGate(10));
+   getGate(22)->addFin(false,getGate(16));
+
+   getGate(15)->addFout(getGate(19));
+   getGate(7)->addFout(getGate(19));
+   getGate(19)->addFin(false,getGate(15));
+   getGate(19)->addFin(true,getGate(7));
+
+   getGate(16)->addFout(getGate(23));
+   getGate(19)->addFout(getGate(23));
+   getGate(23)->addFin(false,getGate(16));
+   getGate(23)->addFin(false,getGate(19));
+
+   getGate(1)->setNameStr("1GAT");
+   getGate(2)->setNameStr("2GAT");
+   getGate(6)->setNameStr("6GAT");
+   getGate(7)->setNameStr("7GAT");
+   getGate(22)->setNameStr("22GAT$PO");
+   getGate(23)->setNameStr("23GAT$PO");
 
    return true;
 }
@@ -234,22 +290,34 @@ CirMgr::readCircuit(const string& fileName)
 /*   class CirMgr member functions for circuit printing   */
 /**********************************************************/
 /*********************
-Circuit Statistics
-==================
-  PI          20
-  PO          12
-  AIG        130
-------------------
-  Total      162
+
+
+
+
+
+
+
 *********************/
 void
 CirMgr::printSummary() const
 {
+   cout<<"Circuit Statistics"<<endl;
+   cout<<"=================="<<endl;
+   cout<<"  "<<setw(5)<<left<<"PI"<<setw(9)<<right<<pins.size()<<endl;
+   cout<<"  "<<setw(5)<<left<<"PO"<<setw(9)<<right<<pouts.size()<<endl;
+   cout<<"  "<<setw(5)<<left<<"AIG"<<setw(9)<<right<<aigs.size()<<endl;
+   cout<<"------------------"<<endl;
+   cout<<"  "<<setw(5)<<left<<"Total"<<setw(9)<<right<<(pins.size()+pouts.size()+aigs.size())<<endl;
 }
 
+//TODO non const iterator?
 void
-CirMgr::printNetlist() const
+CirMgr::printNetlist() 
 {
+   for (vector<CirGate*>::iterator it=pouts.begin(); it!=pouts.end(); ++it)
+   {
+      (*it)->dfsTraverse();
+   }
 }
 
 void

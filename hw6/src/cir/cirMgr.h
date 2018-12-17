@@ -36,7 +36,7 @@ public:
 
    // Member functions about circuit reporting
    void printSummary() const;
-   void printNetlist() const;
+   void printNetlist();
    void printPIs() const;
    void printPOs() const;
    void printFloatGates() const;
@@ -47,6 +47,8 @@ private:
    vector<CirGate*> gates;
    vector<CirGate*> pins;
    vector<CirGate*> pouts;
+   vector<CirGate*> aigs;
+   vector<CirGate*> floats;
 };
 
 #endif // CIR_MGR_H

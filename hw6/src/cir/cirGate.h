@@ -55,12 +55,16 @@ public:
    }
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> ( ifNotVert, in) ); }
    void addFout(CirGate* out) { fouts.push_back(out); }
+   void setMarked(bool flag) {ifmarked=flag;}
+   bool getMarked() const {return ifmarked;}
+   void dfsTraverse();
 
 
 private:
    unsigned lineNo;
 
    //my
+   bool ifmarked=false;
    unsigned gid;
    unsigned typeId=0;
    static vector<string> typeString;
@@ -111,6 +115,16 @@ public:
    CirConGate(unsigned lineNoIn): CirGate(lineNoIn, 0, 4) {}
    CirConGate() {}
    ~CirConGate() {}
+   virtual void printGate() const;
+private:
+};
+
+class CirFloGate: public CirGate
+{
+public:
+   CirFloGate(unsigned lineNoIn,unsigned gidIn): CirGate(lineNoIn, gidIn, 1) {}
+   CirFloGate() {}
+   ~CirFloGate() {}
    virtual void printGate() const;
 private:
 };

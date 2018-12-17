@@ -40,12 +40,46 @@ void
 CirGate::reportFanin(int level) const
 {
    assert (level >= 0);
+   //for (int current=0; current<=level; ++current)
+   //{
+   //cout<<typeString[typeId]<<" "<<getLineNo<<endl;
+   //}
 }
 
 void
 CirGate::reportFanout(int level) const
 {
    assert (level >= 0);
+}
+
+void
+CirGate::dfsTraverse() 
+{
+   if (fins.size()==0)
+   {
+      this->setMarked(true);
+      if (this->typeId!=0)
+      {
+         cout<<this->getId()<<endl;
+      }
+      else {}
+   } 
+   else
+   {
+      for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
+      {
+         //check if next marked
+         if (!(it->second->getMarked()))
+         {
+            it->second->dfsTraverse();
+         }
+         else 
+         {
+         }
+      }
+      this->setMarked(true);
+      cout<<this->getId()<<endl;
+   }
 }
 
 /**************************************/
@@ -77,5 +111,13 @@ CirAigGate::printGate() const
 /**************************************/
 void
 CirConGate::printGate() const
+{
+}
+
+/**************************************/
+/*   class CirFloGate member functions*/
+/**************************************/
+void
+CirFloGate::printGate() const
 {
 }
