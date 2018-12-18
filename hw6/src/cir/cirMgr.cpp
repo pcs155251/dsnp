@@ -148,7 +148,7 @@ parseError(CirParseError err)
 
 //for sorting gate
 bool
-compareGateId( const CirGate* g0, unsigned g1Id )
+compareGateId( const CirGate* g0, const unsigned g1Id )
 {
    return ( g0->getId() < g1Id );
 }
@@ -249,7 +249,7 @@ CirMgr::readCircuit(const string& fileName)
    getGate(1)->addFout(getGate(10));
    getGate(0)->addFout(getGate(10));
    getGate(10)->addFin(true,getGate(1));
-   getGate(10)->addFin(false,getGate(0));
+   getGate(10)->addFin(true,getGate(0));
 
    getGate(1)->addFout(getGate(11));
    getGate(6)->addFout(getGate(11));
@@ -280,8 +280,8 @@ CirMgr::readCircuit(const string& fileName)
    getGate(2)->setNameStr("2GAT");
    getGate(6)->setNameStr("6GAT");
    getGate(7)->setNameStr("7GAT");
-   getGate(22)->setNameStr("22GAT$PO");
-   getGate(23)->setNameStr("23GAT$PO");
+   getGate(24)->setNameStr("22GAT$PO");
+   getGate(25)->setNameStr("23GAT$PO");
 
    return true;
 }
@@ -312,11 +312,19 @@ CirMgr::printSummary() const
 
 //TODO non const iterator?
 void
-CirMgr::printNetlist() 
+CirMgr::printNetlist() const 
 {
-   for (vector<CirGate*>::iterator it=pouts.begin(); it!=pouts.end(); ++it)
+   //reset count and mark first;
+   CirGate::count=0;
+   for (size_t i=0; i!=gates.size(); ++i)
    {
-      (*it)->dfsTraverse();
+      gates[i]->setMarked(false);
+   }
+
+   cout<<endl;
+   for (size_t i=0; i!=pouts.size(); ++i)
+   {
+      pouts[i]->dfsTraverse();
    }
 }
 

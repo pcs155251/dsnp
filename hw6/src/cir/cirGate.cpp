@@ -26,6 +26,7 @@ extern CirMgr *cirMgr;
 /**************************************/
 
 vector<string> CirGate::typeString = vector<string> { "UNDEF", "PI", "PO", "AIG", "CONST" };
+unsigned CirGate::count = 0;
 
 void
 CirGate::reportGate() const
@@ -60,7 +61,8 @@ CirGate::dfsTraverse()
       this->setMarked(true);
       if (this->typeId!=0)
       {
-         cout<<this->getId()<<endl;
+         this->printGate();
+         ++count;
       }
       else {}
    } 
@@ -78,7 +80,8 @@ CirGate::dfsTraverse()
          }
       }
       this->setMarked(true);
-      cout<<this->getId()<<endl;
+      this->printGate();
+      ++count;
    }
 }
 
@@ -88,6 +91,12 @@ CirGate::dfsTraverse()
 void
 CirPiGate::printGate() const
 {
+   cout<<"["<<count<<"] "<<typeString[typeId]<<"  "<<gid;
+   if (name!="")
+   {
+      cout<<" ("<<name<<")";
+   } else {}
+   cout<<endl;
 }
 
 /**************************************/
@@ -96,6 +105,25 @@ CirPiGate::printGate() const
 void
 CirPoGate::printGate() const
 {
+   cout<<"["<<count<<"] "<<typeString[typeId]<<"  "<<gid;
+   for (unsigned i=0; i!=fins.size(); i++)
+   {
+      cout<<" ";
+      if (!(fins[i].second->getTypeId())) 
+      { 
+         cout<<"*";
+      } else {}
+      if (fins[i].first==false) 
+      { 
+         cout<<"!";
+      } else {}
+      cout<<fins[i].second->getId();
+   }
+   if (name!="")
+   {
+      cout<<" ("<<name<<")";
+   } else {}
+   cout<<endl;
 }
 
 /**************************************/
@@ -104,6 +132,20 @@ CirPoGate::printGate() const
 void
 CirAigGate::printGate() const
 {
+   cout<<"["<<count<<"] "<<typeString[typeId]<<" "<<gid<<" ";
+   for (unsigned i=0; i!=fins.size(); i++)
+   {
+      if (!(fins[i].second->getTypeId())) 
+      { 
+         cout<<"*";
+      } else {}
+      if (fins[i].first==false) 
+      { 
+         cout<<"!";
+      } else {}
+      cout<<fins[i].second->getId()<<" ";
+   }
+   cout<<endl;
 }
 
 /**************************************/
@@ -112,6 +154,7 @@ CirAigGate::printGate() const
 void
 CirConGate::printGate() const
 {
+   cout<<"["<<count<<"] "<<typeString[typeId]<<gid<<endl;
 }
 
 /**************************************/

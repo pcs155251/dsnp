@@ -41,6 +41,7 @@ public:
 
    //my
    unsigned getId() const { return gid; }
+   unsigned getTypeId() const { return typeId; }
    void setNameStr( const string& nameIn ) { name = nameIn; }
    string getNameStr() const 
    {
@@ -58,6 +59,7 @@ public:
    void setMarked(bool flag) {ifmarked=flag;}
    bool getMarked() const {return ifmarked;}
    void dfsTraverse();
+   static unsigned count;
 
 
 private:
@@ -65,14 +67,14 @@ private:
 
    //my
    bool ifmarked=false;
-   unsigned gid;
-   unsigned typeId=0;
-   static vector<string> typeString;
 
 protected:
    //my
    //for derived class constructor
    CirGate(unsigned lineNoIn, unsigned gidIn, unsigned typeIdIn): lineNo(lineNoIn), gid(gidIn), typeId(typeIdIn) {}
+   unsigned gid;
+   unsigned typeId=0;
+   static vector<string> typeString;
    string name;
    //my uninitialized memebers
    vector<pair<bool,CirGate*>> fins;
@@ -122,7 +124,7 @@ private:
 class CirFloGate: public CirGate
 {
 public:
-   CirFloGate(unsigned lineNoIn,unsigned gidIn): CirGate(lineNoIn, gidIn, 1) {}
+   CirFloGate(unsigned lineNoIn,unsigned gidIn): CirGate(lineNoIn, gidIn, 0) {}
    CirFloGate() {}
    ~CirFloGate() {}
    virtual void printGate() const;

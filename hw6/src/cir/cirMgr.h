@@ -36,7 +36,7 @@ public:
 
    // Member functions about circuit reporting
    void printSummary() const;
-   void printNetlist();
+   void printNetlist() const;
    void printPIs() const;
    void printPOs() const;
    void printFloatGates() const;
