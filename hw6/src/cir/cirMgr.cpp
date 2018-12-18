@@ -313,6 +313,10 @@ CirMgr::readCircuit(const string& fileName)
          floats.push_back( tmp );
       }
       else {}
+      if (getGate(in1Li[i]/2==0||in2Li[i]/2==0))
+      {
+         floatfins.push_back( aigs[i] );
+      } else {}
    }
     
 
@@ -338,6 +342,41 @@ CirMgr::readCircuit(const string& fileName)
       getGate(f1Id)->addFout( f1nonRevert, getGate(aigs[i]->getId()) );
       getGate(f2Id)->addFout( f2nonRevert, getGate(aigs[i]->getId()) );
    }
+
+   //find bad gates
+   for (size_t i=0; i!=gates.size(); ++i)
+   {
+      gates[i]->setMarked(false);
+   }
+   for (unsigned i=0; i!=gates.size(); ++i)
+   {
+      for (unsigned ii=0; ii!=pins.size(); ++ii)
+      {
+        //cout<<!(gates[i]->dfsSearch( pins[ii]))<<endl;
+        if ( (gates[i]->dfsSearch( pins[ii]))==false )
+        {
+           floatfins.push_back(gates[i]);
+        } else {}
+      }
+   }
+   sort( floatfins.begin(), floatfins.end(), compareGateGate );
+
+   for (size_t i=0; i!=gates.size(); ++i)
+   {
+      gates[i]->setMarked(false);
+   }
+   for (unsigned i=0; i!=gates.size(); ++i)
+   {
+      for (unsigned ii=0; ii!=pouts.size(); ++ii)
+      {
+        //cout<<!(pouts[ii]->dfsSearch( gates[i]))<<endl;
+        if ( (pouts[ii]->dfsSearch( gates[i]))==false )
+        {
+           notused.push_back(gates[i]);
+        } else {}
+      }
+   }
+   sort( notused.begin(), notused.end(), compareGateGate );
 
    return true;
 }
@@ -410,6 +449,19 @@ CirMgr::printPOs() const
 void
 CirMgr::printFloatGates() const
 {
+   cout << "Gates with floating fanin(s):";
+   for (unsigned i=0; i!=floatfins.size(); ++i)
+   {
+      cout<<" "<<floatfins[i]->getId();
+   }
+   cout << endl;
+
+   cout << "Gates defined but not used :";
+   for (unsigned i=0; i!=notused.size(); ++i)
+   {
+      cout<<" "<<notused[i]->getId();
+   }
+   cout << endl;
 }
 
 void

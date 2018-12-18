@@ -170,6 +170,42 @@ CirGate::dfsTraverse()
    }
 }
 
+bool
+CirGate::dfsSearch( CirGate* target ) 
+{
+   if (this==target)
+   {
+      return true;
+   }
+   else
+   {
+      if (fins.size()==0)
+      {
+         this->setMarked(true);
+      } 
+      else
+      {
+         for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
+         {
+            //check if next marked
+            if (!(it->second->getMarked()))
+            {
+               if( it->second->dfsSearch(target) )
+               {
+                  return true;
+               } else {}
+            }
+            else 
+            {
+            }
+         }
+         this->setMarked(true);
+      }
+      return false;
+   }
+}
+
+
 /**************************************/
 /*   class CirPiGate member functions */
 /**************************************/

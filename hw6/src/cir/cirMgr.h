@@ -49,6 +49,8 @@ private:
    vector<CirGate*> pouts;
    vector<CirGate*> aigs;
    vector<CirGate*> floats;
+   vector<CirGate*> floatfins;
+   vector<CirGate*> notused;
 };
 
 #endif // CIR_MGR_H

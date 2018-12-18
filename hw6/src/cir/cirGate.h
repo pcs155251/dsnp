@@ -59,6 +59,7 @@ public:
    void setMarked(bool flag) const {ifmarked=flag;}
    bool getMarked() const {return ifmarked;}
    void dfsTraverse();
+   bool dfsSearch(CirGate* target);
    static unsigned count;
 
 private:
