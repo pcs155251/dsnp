@@ -31,28 +31,28 @@ unsigned CirGate::count = 0;
 void
 CirGate::reportGate() const
 {
-   cout<<"================================================== "<<endl;
+   cout<<"=================================================="<<endl;
    string tmp = "= "+typeString[typeId]+"("+to_string(this->gid)+")"+getNameStr()+", line "+to_string(this->getLineNo());
    tmp = tmp + string(49-tmp.length(), ' ');
    tmp = tmp + "=\n";
    cout<<tmp;
-   cout<<"================================================== "<<endl;
+   cout<<"=================================================="<<endl;
 }
 
 void
 CirGate::reportFanin(int level) const
 {
    assert (level >= 0);
-   reportFanin( level, 0, false, false );
-   reportFanin( level, 0, false, true );
+   reportFanin( level, 0, true, false );
+   reportFanin( level, 0, true, true );
 }
 
 void
 CirGate::reportFanout(int level) const
 {
    assert (level >= 0);
-   reportFanout( level, 0, false, false );
-   reportFanout( level, 0, false, true );
+   reportFanout( level, 0, true, false );
+   reportFanout( level, 0, true, true );
 }
 
 void
@@ -217,9 +217,10 @@ CirPoGate::printGate() const
 void
 CirAigGate::printGate() const
 {
-   cout<<"["<<count<<"] "<<typeString[typeId]<<" "<<gid<<" ";
+   cout<<"["<<count<<"] "<<typeString[typeId]<<" "<<gid;
    for (unsigned i=0; i!=fins.size(); i++)
    {
+      cout<<" ";
       if (!(fins[i].second->getTypeId())) 
       { 
          cout<<"*";
@@ -228,7 +229,7 @@ CirAigGate::printGate() const
       { 
          cout<<"!";
       } else {}
-      cout<<fins[i].second->getId()<<" ";
+      cout<<fins[i].second->getId();
    }
    cout<<endl;
 }

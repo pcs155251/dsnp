@@ -16,6 +16,7 @@
 #include "cirGate.h"
 #include "util.h"
 #include <algorithm>
+#include <sstream>
 
 using namespace std;
 
@@ -162,6 +163,14 @@ compareGateGate( const CirGate* g0, const CirGate* g1 )
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
+CirMgr::~CirMgr()
+{
+   for (unsigned i=0; i!=gates.size(); ++i)
+   {
+      delete gates[i];
+   }
+}
+
 CirGate* 
 CirMgr::getGate(unsigned gid) 
 { 
@@ -181,107 +190,154 @@ CirMgr::getGate(unsigned gid)
 bool
 CirMgr::readCircuit(const string& fileName)
 {
-   //TODO
-   //should read all gate and sort here
-   cout<<"readCircuit, test"<<endl;
-   gates.reserve(23);
-   
+   ifstream inFile( fileName );
+   if (inFile.fail())
+   {
+      cerr << "Cannot open design \""<<fileName<<"\"!!"<<endl;
+      return false;
+   } else {}
+
+   string tmpstring;
+   //header line
+   getline( inFile, tmpstring );
+   ++lineNo;
+   istringstream iss(tmpstring );
+
+   getline( iss, tmpstring, ' ');//aag
+   unsigned maxN, inN, lN, outN, andN;
+   getline( iss, tmpstring, ' ');//M
+   maxN = stoi( tmpstring );
+   getline( iss, tmpstring, ' ');//I
+   inN = stoi( tmpstring );
+   getline( iss, tmpstring, ' ');//L
+   lN = stoi( tmpstring );
+   getline( iss, tmpstring, ' ');//O
+   outN = stoi( tmpstring );
+   getline( iss, tmpstring, ' ');//A
+   andN = stoi( tmpstring );
+
+   gates.reserve( maxN );
+   pins.reserve( inN );
+   pouts.reserve( outN );
+   aigs.reserve( andN );
+
    CirGate* tmp;
-   tmp = new CirPiGate(2,1);
-   gates.push_back( tmp );
-   pins.push_back( tmp );
+   //in gates
+   for (unsigned i=0; i!=inN; i++)
+   {
+      unsigned lit;
+      getline( inFile, tmpstring );
+      lit = stoi( tmpstring );
+      tmp = new CirPiGate(lineNo+1,lit/2);
+      gates.push_back( tmp );
+      pins.push_back( tmp );
+      ++lineNo;
+   }
+   //out gates
+   vector<unsigned> toPoLi(outN);
+   for (unsigned i=0; i!=outN; i++)
+   {
+      unsigned lit;
+      getline( inFile, tmpstring );
+      lit = stoi( tmpstring );
+      tmp = new CirPoGate(lineNo+1,maxN+i+1);
+      gates.push_back( tmp );
+      pouts.push_back( tmp );
+      toPoLi[i] = lit;
+      ++lineNo;
+   }
+   //and gates
+   vector<unsigned> in1Li(andN);
+   vector<unsigned> in2Li(andN);
+   for (unsigned i=0; i!=andN; i++)
+   {
+      unsigned lit;
+      getline( inFile, tmpstring );
+      istringstream isand(tmpstring);
+      getline( isand, tmpstring, ' ');
+      lit = stoi( tmpstring );
+      getline( isand, tmpstring, ' ');
+      in1Li[i] = stoi( tmpstring );
+      getline( isand, tmpstring, ' ');
+      in2Li[i] = stoi( tmpstring );
+      tmp = new CirAigGate(lineNo+1,lit/2);
+      gates.push_back( tmp );
+      aigs.push_back( tmp );
 
-   tmp = new CirPiGate(3,2);
-   gates.push_back( tmp );
-   pins.push_back( tmp );
+      //detect constant gate
+      if (in1Li[i]/2==0||in2Li[i]/2==0)
+      {
+         gates.push_back( new CirConGate(lineNo+1) );
+      } else {}
+      ++lineNo;
+   }
+   //set name
+   while (getline( inFile, tmpstring) )
+   {
+      istringstream iname(tmpstring);
+      getline( iname, tmpstring, ' ');
+      if (tmpstring[0]=='i')
+      {
+         string posStr( tmpstring.begin()+1, tmpstring.end() );
+         unsigned pos = stoi( posStr );
+         getline( iname, tmpstring);
+         pins[pos]->setNameStr( tmpstring );
+      }
+      else if (tmpstring[0]=='o')
+      {
+         string posStr( tmpstring.begin()+1, tmpstring.end() );
+         unsigned pos = stoi( posStr );
+         getline( iname, tmpstring);
+         pouts[pos]->setNameStr( tmpstring );
+      }
+      else
+      {
+      }
+   }
 
-   tmp = new CirPiGate(4,6);
-   gates.push_back( tmp );
-   pins.push_back( tmp );
-
-   tmp = new CirPiGate(5,7);
-   gates.push_back( tmp );
-   pins.push_back( tmp );
-
-   tmp = new CirPoGate(6,24); //connect to 22
-   gates.push_back( tmp );
-   pouts.push_back( tmp );
-   tmp = new CirPoGate(7,25); //connect to 23
-   gates.push_back( tmp );
-   pouts.push_back( tmp );
-
-   
-   tmp = new CirAigGate( 8,10);
-   gates.push_back( tmp );
-   aigs.push_back( tmp );
-   tmp = new CirAigGate( 9,11);
-   gates.push_back( tmp );
-   aigs.push_back( tmp );
-   tmp = new CirAigGate(10,16);
-   gates.push_back( tmp );
-   aigs.push_back( tmp );
-   tmp = new CirAigGate(11,22);
-   gates.push_back( tmp );
-   aigs.push_back( tmp );
-   tmp = new CirAigGate(12,19);
-   gates.push_back( tmp );
-   aigs.push_back( tmp );
-   tmp = new CirAigGate(13,23);
-   gates.push_back( tmp );
-   aigs.push_back( tmp );
-   
-   tmp = new CirConGate(8);
-   gates.push_back( tmp );
-
-   tmp = new CirFloGate(12,15);
-   gates.push_back( tmp );
-   floats.push_back( tmp );
-
+   //detected undefined gate
    sort( gates.begin(), gates.end(), compareGateGate );
+   for (unsigned i=0; i!=aigs.size(); ++i)
+   { 
+      if (getGate(in1Li[i]/2)==0)
+      {
+         tmp = new CirFloGate(0,in1Li[i]/2);
+         gates.push_back( tmp );
+         floats.push_back( tmp );
+      }
+      else {}
+      if (getGate(in2Li[i]/2)==0)
+      {
+         tmp = new CirFloGate(0,in2Li[i]/2);
+         gates.push_back( tmp );
+         floats.push_back( tmp );
+      }
+      else {}
+   }
+    
 
-   //start connecting
-   //connecting from out
-   getGate(22)->addFout(false,getGate(24));
-   getGate(23)->addFout(false,getGate(25));
-   getGate(24)->addFin(false,getGate(22));
-   getGate(25)->addFin(false,getGate(23));
-   //connecting and
-   getGate(1)->addFout(true,getGate(10));
-   getGate(0)->addFout(true,getGate(10));
-   getGate(10)->addFin(true,getGate(1));
-   getGate(10)->addFin(true,getGate(0));
-
-   getGate(1)->addFout(false,getGate(11));
-   getGate(6)->addFout(true,getGate(11));
-   getGate(11)->addFin(false,getGate(1));
-   getGate(11)->addFin(true,getGate(6));
-
-   getGate(2)->addFout(true,getGate(16));
-   getGate(11)->addFout(false,getGate(16));
-   getGate(16)->addFin(true,getGate(2));
-   getGate(16)->addFin(false,getGate(11));
-
-   getGate(10)->addFout(false,getGate(22));
-   getGate(16)->addFout(false,getGate(22));
-   getGate(22)->addFin(false,getGate(10));
-   getGate(22)->addFin(false,getGate(16));
-
-   getGate(15)->addFout(false,getGate(19));
-   getGate(7)->addFout(true,getGate(19));
-   getGate(19)->addFin(false,getGate(15));
-   getGate(19)->addFin(true,getGate(7));
-
-   getGate(16)->addFout(false,getGate(23));
-   getGate(19)->addFout(false,getGate(23));
-   getGate(23)->addFin(false,getGate(16));
-   getGate(23)->addFin(false,getGate(19));
-
-   getGate(1)->setNameStr("1GAT");
-   getGate(2)->setNameStr("2GAT");
-   getGate(6)->setNameStr("6GAT");
-   getGate(7)->setNameStr("7GAT");
-   getGate(24)->setNameStr("22GAT$PO");
-   getGate(25)->setNameStr("23GAT$PO");
+   //connection
+   sort( gates.begin(), gates.end(), compareGateGate );
+   //connect po
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      unsigned addId = toPoLi[i]/2;
+      bool ifnoRevert = !((toPoLi[i])%2);
+      pouts[i]->addFin( ifnoRevert, getGate(addId) );
+      getGate(addId)->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
+   }
+   //connect and
+   for (unsigned i=0; i!=aigs.size(); ++i)
+   {
+      unsigned f1Id = in1Li[i]/2;
+      bool f1nonRevert = !((in1Li[i])%2);
+      unsigned f2Id = in2Li[i]/2;
+      bool f2nonRevert = !((in2Li[i])%2);
+      aigs[i]->addFin( f1nonRevert, getGate(f1Id) );
+      aigs[i]->addFin( f2nonRevert, getGate(f2Id) );
+      getGate(f1Id)->addFout( f1nonRevert, getGate(aigs[i]->getId()) );
+      getGate(f2Id)->addFout( f2nonRevert, getGate(aigs[i]->getId()) );
+   }
 
    return true;
 }
@@ -301,7 +357,7 @@ CirMgr::readCircuit(const string& fileName)
 void
 CirMgr::printSummary() const
 {
-   cout<<"Circuit Statistics"<<endl;
+   cout<<endl<<"Circuit Statistics"<<endl;
    cout<<"=================="<<endl;
    cout<<"  "<<setw(5)<<left<<"PI"<<setw(9)<<right<<pins.size()<<endl;
    cout<<"  "<<setw(5)<<left<<"PO"<<setw(9)<<right<<pouts.size()<<endl;

@@ -25,7 +25,7 @@ class CirMgr
 {
 public:
    CirMgr(){}
-   ~CirMgr() {}
+   ~CirMgr();
 
    // Access functions
    // return '0' if "gid" corresponds to an undefined gate.
