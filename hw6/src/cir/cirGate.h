@@ -55,18 +55,19 @@ public:
       }
    }
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> ( ifNotVert, in) ); }
-   void addFout(CirGate* out) { fouts.push_back(out); }
-   void setMarked(bool flag) {ifmarked=flag;}
+   void addFout(bool ifNotVert, CirGate* out) { fouts.push_back( pair<bool,CirGate*> (ifNotVert, out)); }
+   void setMarked(bool flag) const {ifmarked=flag;}
    bool getMarked() const {return ifmarked;}
    void dfsTraverse();
    static unsigned count;
-
 
 private:
    unsigned lineNo;
 
    //my
-   bool ifmarked=false;
+   mutable bool ifmarked=false;
+   void reportFanin(int level, unsigned offset, bool iftrue, bool ifprint) const;
+   void reportFanout(int level, unsigned offset, bool iftrue, bool ifprint) const;
 
 protected:
    //my
@@ -78,7 +79,7 @@ protected:
    string name;
    //my uninitialized memebers
    vector<pair<bool,CirGate*>> fins;
-   vector<CirGate*> fouts;
+   vector<pair<bool,CirGate*>> fouts;
 };
 
 class CirPiGate: public CirGate

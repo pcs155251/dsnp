@@ -31,9 +31,11 @@ unsigned CirGate::count = 0;
 void
 CirGate::reportGate() const
 {
-   //TODO add right =
    cout<<"================================================== "<<endl;
-   cout<<"= "<<typeString[typeId]<<"("<<this->gid<<")"<<getNameStr()<<", line "<<this->getLineNo()<<endl;
+   string tmp = "= "+typeString[typeId]+"("+to_string(this->gid)+")"+getNameStr()+", line "+to_string(this->getLineNo());
+   tmp = tmp + string(49-tmp.length(), ' ');
+   tmp = tmp + "=\n";
+   cout<<tmp;
    cout<<"================================================== "<<endl;
 }
 
@@ -41,17 +43,100 @@ void
 CirGate::reportFanin(int level) const
 {
    assert (level >= 0);
-   //for (int current=0; current<=level; ++current)
-   //{
-   //cout<<typeString[typeId]<<" "<<getLineNo<<endl;
-   //}
+   reportFanin( level, 0, false, false );
+   reportFanin( level, 0, false, true );
 }
 
 void
 CirGate::reportFanout(int level) const
 {
    assert (level >= 0);
+   reportFanout( level, 0, false, false );
+   reportFanout( level, 0, false, true );
 }
+
+void
+CirGate::reportFanin(int level, unsigned offset, bool iftrue, bool ifprint) const
+{
+   assert (level >= 0);
+   if (ifprint)
+   {
+      cout<<string(2*offset,' ');
+      if (!iftrue)
+      {
+         cout<<"!";
+      } else {}
+      cout<<typeString[typeId]<<" "<<this->getId();
+
+      if (this->getMarked())
+      {
+         cout<<" (*)"<<endl;
+      }
+      else 
+      {
+         cout<<endl;
+      }
+   } 
+   else 
+   {
+      this->setMarked(false);
+   }
+
+   if (level > 0)
+   {
+      if (ifprint)
+      {
+         this->setMarked(true);
+      } else {}
+
+      for (unsigned i=0; i!=fins.size(); ++i)
+      {  
+         fins[i].second->reportFanin(level-1, offset+1, fins[i].first, ifprint);
+      }
+   } else {}
+}
+
+void
+CirGate::reportFanout(int level, unsigned offset, bool iftrue, bool ifprint) const
+{
+   assert (level >= 0);
+   if (ifprint)
+   {
+      cout<<string(2*offset,' ');
+      if (!iftrue)
+      {
+         cout<<"!";
+      } else {}
+      cout<<typeString[typeId]<<" "<<this->getId();
+
+      if (this->getMarked())
+      {
+         cout<<" (*)"<<endl;
+      }
+      else 
+      {
+         cout<<endl;
+      }
+   }
+   else 
+   {
+      this->setMarked(false);
+   }
+
+   if (level > 0)
+   {
+      if (ifprint)
+      {
+         this->setMarked(true);
+      } else {}
+
+      for (unsigned i=0; i!=fouts.size(); ++i)
+      {  
+         fouts[i].second->reportFanout(level-1, offset+1, fouts[i].first,ifprint);
+      }
+   } else {}
+}
+
 
 void
 CirGate::dfsTraverse() 

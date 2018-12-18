@@ -241,38 +241,38 @@ CirMgr::readCircuit(const string& fileName)
 
    //start connecting
    //connecting from out
-   getGate(22)->addFout(getGate(24));
-   getGate(23)->addFout(getGate(25));
+   getGate(22)->addFout(false,getGate(24));
+   getGate(23)->addFout(false,getGate(25));
    getGate(24)->addFin(false,getGate(22));
    getGate(25)->addFin(false,getGate(23));
    //connecting and
-   getGate(1)->addFout(getGate(10));
-   getGate(0)->addFout(getGate(10));
+   getGate(1)->addFout(true,getGate(10));
+   getGate(0)->addFout(true,getGate(10));
    getGate(10)->addFin(true,getGate(1));
    getGate(10)->addFin(true,getGate(0));
 
-   getGate(1)->addFout(getGate(11));
-   getGate(6)->addFout(getGate(11));
+   getGate(1)->addFout(false,getGate(11));
+   getGate(6)->addFout(true,getGate(11));
    getGate(11)->addFin(false,getGate(1));
    getGate(11)->addFin(true,getGate(6));
 
-   getGate(2)->addFout(getGate(16));
-   getGate(11)->addFout(getGate(16));
+   getGate(2)->addFout(true,getGate(16));
+   getGate(11)->addFout(false,getGate(16));
    getGate(16)->addFin(true,getGate(2));
    getGate(16)->addFin(false,getGate(11));
 
-   getGate(10)->addFout(getGate(22));
-   getGate(16)->addFout(getGate(22));
+   getGate(10)->addFout(false,getGate(22));
+   getGate(16)->addFout(false,getGate(22));
    getGate(22)->addFin(false,getGate(10));
    getGate(22)->addFin(false,getGate(16));
 
-   getGate(15)->addFout(getGate(19));
-   getGate(7)->addFout(getGate(19));
+   getGate(15)->addFout(false,getGate(19));
+   getGate(7)->addFout(true,getGate(19));
    getGate(19)->addFin(false,getGate(15));
    getGate(19)->addFin(true,getGate(7));
 
-   getGate(16)->addFout(getGate(23));
-   getGate(19)->addFout(getGate(23));
+   getGate(16)->addFout(false,getGate(23));
+   getGate(19)->addFout(false,getGate(23));
    getGate(23)->addFin(false,getGate(16));
    getGate(23)->addFin(false,getGate(19));
 
@@ -326,12 +326,17 @@ CirMgr::printNetlist() const
    {
       pouts[i]->dfsTraverse();
    }
+
 }
 
 void
 CirMgr::printPIs() const
 {
    cout << "PIs of the circuit:";
+   for (unsigned i=0; i!=pins.size(); ++i)
+   {
+      cout<<" "<<pins[i]->getId();
+   }
    cout << endl;
 }
 
@@ -339,6 +344,10 @@ void
 CirMgr::printPOs() const
 {
    cout << "POs of the circuit:";
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      cout<<" "<<pouts[i]->getId();
+   }
    cout << endl;
 }
 
