@@ -1,0 +1,19 @@
+cirr tests.fraig/cirp-n.aag
+cirp
+cirp -s
+cirp -n
+cirp -n
+cirp -pi
+cirp -po
+cirp -fl
+cirg 11 -fani 1
+cirg 11 -fani 3
+cirg 11 -fano 2
+cirg 11 -fano 3
+cirg 1 -fano 3
+cirg 0
+cirg 1
+cirg 2
+cirg 3
+cirg 4
+q -f

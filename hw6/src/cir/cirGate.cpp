@@ -26,6 +26,7 @@ extern CirMgr *cirMgr;
 /**************************************/
 
 unsigned CirGate::count = 0;
+unsigned CirGate::refMark = 0;
 
 void
 CirGate::reportGate() const
@@ -43,76 +44,72 @@ void
 CirGate::reportFanin(int level) const
 {
    assert (level >= 0);
-   reportFanin( level, 0, true, false );
-   reportFanin( level, 0, true, true );
+   setRefMark();
+   reportFanin( level, 0, true );
 }
 
 void
 CirGate::reportFanout(int level) const
 {
    assert (level >= 0);
-   reportFanout( level, 0, true, false );
-   reportFanout( level, 0, true, true );
+   setRefMark();
+   reportFanout( level, 0, true );
 }
 
 void
-CirGate::reportFanin(int level, unsigned offset, bool iftrue, bool ifprint) const
+CirGate::reportFanin(int level, unsigned offset, bool iftrue ) const
 {
    assert (level >= 0);
-   if (ifprint)
+   cout<<string(2*offset,' ');
+   if (!iftrue)
    {
-      cout<<string(2*offset,' ');
-      if (!iftrue)
-      {
-         cout<<"!";
-      } else {}
-      cout<<this->getTypeStr()<<" "<<this->getId();
+      cout<<"!";
+   } else {}
 
-      if (this->getMarked())
+   cout<<this->getTypeStr()<<" "<<this->getId();
+
+   if ( this->isMarked() )
+   { 
+      if (level > 0)
       {
          cout<<" (*)"<<endl;
-      }
+      } 
       else 
       {
          cout<<endl;
       }
-   } 
-   else 
-   {
-      this->setMarked(false);
    }
-
-   if (level > 0)
+   else
    {
-      if (ifprint)
+      cout<<endl;
+      if ( level > 0 )
       {
-         this->setMarked(true);
+         this->setMarked();
+         for (unsigned i=0; i!=fins.size(); ++i)
+         {  
+            fins[i].second->reportFanin(level-1, offset+1, fins[i].first );
+         }
       } else {}
-
-      for (unsigned i=0; i!=fins.size(); ++i)
-      {  
-         fins[i].second->reportFanin(level-1, offset+1, fins[i].first, ifprint);
-      }
-   } else {}
+   }
 }
 
 void
-CirGate::reportFanout(int level, unsigned offset, bool iftrue, bool ifprint) const
+CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
 {
    assert (level >= 0);
-   if (ifprint)
+   cout<<string(2*offset,' ');
+   if (!iftrue)
    {
-      cout<<string(2*offset,' ');
-      if (!iftrue)
-      {
-         cout<<"!";
-      } else {}
-      cout<<this->getTypeStr()<<" "<<this->getId();
+      cout<<"!";
+   } else {}
+   cout<<this->getTypeStr()<<" "<<this->getId();
 
-      if (this->getMarked())
+   if ( this->isMarked() )
+   {
+      if (level > 0)
       {
          cout<<" (*)"<<endl;
-      }
+      }  
       else 
       {
          cout<<endl;
@@ -120,54 +117,35 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue, bool ifprint) con
    }
    else 
    {
-      this->setMarked(false);
-   }
-
-   if (level > 0)
-   {
-      if (ifprint)
+      cout<<endl;
+      if (level > 0)
       {
-         this->setMarked(true);
+         this->setMarked();
+         for (unsigned i=0; i!=fouts.size(); ++i)
+         {  
+            fouts[i].second->reportFanout(level-1, offset+1, fouts[i].first );
+         }
       } else {}
-
-      for (unsigned i=0; i!=fouts.size(); ++i)
-      {  
-         fouts[i].second->reportFanout(level-1, offset+1, fouts[i].first,ifprint);
-      }
-   } else {}
+   }
 }
 
 
 void
 CirGate::dfsTraverse() 
 {
-   if (fins.size()==0)
+   for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
    {
-      this->setMarked(true);
-      if (this->getTypeStr()!="UNDEF")
+      if (!(it->second->isMarked()))
       {
-         this->printGate();
-         ++count;
-      }
-      else {}
-   } 
-   else
+         it->second->dfsTraverse();
+      } else {}
+   }
+   this->setMarked();
+   if (this->getTypeStr()!="UNDEF")
    {
-      for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
-      {
-         //check if next marked
-         if (!(it->second->getMarked()))
-         {
-            it->second->dfsTraverse();
-         }
-         else 
-         {
-         }
-      }
-      this->setMarked(true);
       this->printGate();
       ++count;
-   }
+   } else {}
 }
 
 bool
@@ -181,14 +159,14 @@ CirGate::dfsSearch( CirGate* target )
    {
       if (fins.size()==0)
       {
-         this->setMarked(true);
+         this->setMarked();
       } 
       else
       {
          for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
          {
             //check if next marked
-            if (!(it->second->getMarked()))
+            if (!(it->second->isMarked()))
             {
                if( it->second->dfsSearch(target) )
                {
@@ -199,7 +177,7 @@ CirGate::dfsSearch( CirGate* target )
             {
             }
          }
-         this->setMarked(true);
+         this->setMarked();
       }
       return false;
    }

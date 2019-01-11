@@ -31,7 +31,7 @@ public:
    virtual ~CirGate() {}
 
    // Basic access methods
-   virtual string getTypeStr() const { return ""; }//TODO
+   virtual string getTypeStr() const { return ""; }
    unsigned getLineNo() const { return lineNo; }
    // Printing functions
    virtual void printGate() const = 0;
@@ -46,8 +46,11 @@ public:
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> ( ifNotVert, in) ); }
    void addFout(bool ifNotVert, CirGate* out) { fouts.push_back( pair<bool,CirGate*> (ifNotVert, out)); }
 
-   void setMarked(bool flag) const {ifmarked=flag;}
-   bool getMarked() const {return ifmarked;}
+   //void setMarked(bool flag) const {ifmarked=flag;}
+   //bool getMarked() const {return ifmarked;}
+   bool isMarked() const {return (mark==refMark);}
+   void setMarked() const { mark = refMark; }
+   static void setRefMark() { refMark++; }
    void dfsTraverse();
    bool dfsSearch(CirGate* target);
    static unsigned count;
@@ -56,9 +59,11 @@ private:
    unsigned lineNo;
 
    //my
-   mutable bool ifmarked=false;
-   void reportFanin(int level, unsigned offset, bool iftrue, bool ifprint) const;
-   void reportFanout(int level, unsigned offset, bool iftrue, bool ifprint) const;
+   //mutable bool ifmarked=false;
+   static unsigned refMark;
+   mutable unsigned mark;
+   void reportFanin(int level, unsigned offset, bool iftrue ) const;
+   void reportFanout(int level, unsigned offset, bool iftrue ) const;
 
 protected:
    //my
@@ -78,7 +83,7 @@ public:
    CirPiGate() {}
    ~CirPiGate() {}
    virtual void printGate() const;
-   virtual string getTypeStr() const { return "PI"; }//TODO
+   virtual string getTypeStr() const { return "PI"; }
 private:
 };
 
@@ -89,7 +94,7 @@ public:
    CirPoGate() {}
    ~CirPoGate() {}
    virtual void printGate() const;
-   virtual string getTypeStr() const { return "PO"; }//TODO
+   virtual string getTypeStr() const { return "PO"; }
 private:
 };
 
@@ -100,7 +105,7 @@ public:
    CirAigGate() {}
    ~CirAigGate() {}
    virtual void printGate() const;
-   virtual string getTypeStr() const { return "AIG"; }//TODO
+   virtual string getTypeStr() const { return "AIG"; }
 private:
 };
 
@@ -110,7 +115,7 @@ public:
    CirConGate(): CirGate(0, 0) {}
    ~CirConGate() {}
    virtual void printGate() const;
-   virtual string getTypeStr() const { return "CONST"; }//TODO
+   virtual string getTypeStr() const { return "CONST"; }
 private:
 };
 
@@ -121,7 +126,7 @@ public:
    CirFloGate() {}
    ~CirFloGate() {}
    virtual void printGate() const;
-   virtual string getTypeStr() const { return "UNDEF"; }//TODO
+   virtual string getTypeStr() const { return "UNDEF"; }
 private:
 };
 

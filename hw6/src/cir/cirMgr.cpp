@@ -344,6 +344,7 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //find bad gates
+   /*
    for (size_t i=0; i!=gates.size(); ++i)
    {
       gates[i]->setMarked(false);
@@ -377,6 +378,7 @@ CirMgr::readCircuit(const string& fileName)
       }
    }
    sort( notused.begin(), notused.end(), compareGateGate );
+   */
 
    return true;
 }
@@ -411,10 +413,10 @@ CirMgr::printNetlist() const
 {
    //reset count and mark first;
    CirGate::count=0;
-   for (size_t i=0; i!=gates.size(); ++i)
+   if ( gates.size()!=0 )
    {
-      gates[i]->setMarked(false);
-   }
+      gates[0]->setRefMark();
+   } else {}
 
    cout<<endl;
    for (size_t i=0; i!=pouts.size(); ++i)
