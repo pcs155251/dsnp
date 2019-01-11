@@ -25,14 +25,14 @@ extern CirMgr *cirMgr;
 /*   class CirGate member functions   */
 /**************************************/
 
-vector<string> CirGate::typeString = vector<string> { "UNDEF", "PI", "PO", "AIG", "CONST" };
 unsigned CirGate::count = 0;
 
 void
 CirGate::reportGate() const
 {
    cout<<"=================================================="<<endl;
-   string tmp = "= "+typeString[typeId]+"("+to_string(this->gid)+")"+getNameStr()+", line "+to_string(this->getLineNo());
+   string allName = (getNameStr()=="")? "" : "\""+getNameStr()+"\"";
+   string tmp = "= "+getTypeStr()+"("+to_string(this->gid)+")"+allName+", line "+to_string(this->getLineNo());
    tmp = tmp + string(49-tmp.length(), ' ');
    tmp = tmp + "=\n";
    cout<<tmp;
@@ -66,7 +66,7 @@ CirGate::reportFanin(int level, unsigned offset, bool iftrue, bool ifprint) cons
       {
          cout<<"!";
       } else {}
-      cout<<typeString[typeId]<<" "<<this->getId();
+      cout<<this->getTypeStr()<<" "<<this->getId();
 
       if (this->getMarked())
       {
@@ -107,7 +107,7 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue, bool ifprint) con
       {
          cout<<"!";
       } else {}
-      cout<<typeString[typeId]<<" "<<this->getId();
+      cout<<this->getTypeStr()<<" "<<this->getId();
 
       if (this->getMarked())
       {
@@ -144,7 +144,7 @@ CirGate::dfsTraverse()
    if (fins.size()==0)
    {
       this->setMarked(true);
-      if (this->typeId!=0)
+      if (this->getTypeStr()!="UNDEF")
       {
          this->printGate();
          ++count;
@@ -212,7 +212,7 @@ CirGate::dfsSearch( CirGate* target )
 void
 CirPiGate::printGate() const
 {
-   cout<<"["<<count<<"] "<<typeString[typeId]<<"  "<<gid;
+   cout<<"["<<count<<"] "<<this->getTypeStr()<<"  "<<gid;
    if (name!="")
    {
       cout<<" ("<<name<<")";
@@ -226,11 +226,11 @@ CirPiGate::printGate() const
 void
 CirPoGate::printGate() const
 {
-   cout<<"["<<count<<"] "<<typeString[typeId]<<"  "<<gid;
+   cout<<"["<<count<<"] "<<this->getTypeStr()<<"  "<<gid;
    for (unsigned i=0; i!=fins.size(); i++)
    {
       cout<<" ";
-      if (!(fins[i].second->getTypeId())) 
+      if (fins[i].second->getTypeStr()=="UNDEF") 
       { 
          cout<<"*";
       } else {}
@@ -253,11 +253,11 @@ CirPoGate::printGate() const
 void
 CirAigGate::printGate() const
 {
-   cout<<"["<<count<<"] "<<typeString[typeId]<<" "<<gid;
+   cout<<"["<<count<<"] "<<this->getTypeStr()<<" "<<gid;
    for (unsigned i=0; i!=fins.size(); i++)
    {
       cout<<" ";
-      if (!(fins[i].second->getTypeId())) 
+      if (fins[i].second->getTypeStr()=="UNDEF") 
       { 
          cout<<"*";
       } else {}
@@ -276,7 +276,7 @@ CirAigGate::printGate() const
 void
 CirConGate::printGate() const
 {
-   cout<<"["<<count<<"] "<<typeString[typeId]<<gid<<endl;
+   cout<<"["<<count<<"] "<<this->getTypeStr()<<gid<<endl;
 }
 
 /**************************************/

@@ -31,7 +31,7 @@ public:
    virtual ~CirGate() {}
 
    // Basic access methods
-   string getTypeStr() const { return ""; }//TODO
+   virtual string getTypeStr() const { return ""; }//TODO
    unsigned getLineNo() const { return lineNo; }
    // Printing functions
    virtual void printGate() const = 0;
@@ -41,21 +41,11 @@ public:
 
    //my
    unsigned getId() const { return gid; }
-   unsigned getTypeId() const { return typeId; }
    void setNameStr( const string& nameIn ) { name = nameIn; }
-   string getNameStr() const 
-   {
-      if (name!="")
-      {
-         return "\""+name+"\"";
-      }
-      else 
-      {
-         return "";
-      }
-   }
+   string getNameStr() const { return name; }
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> ( ifNotVert, in) ); }
    void addFout(bool ifNotVert, CirGate* out) { fouts.push_back( pair<bool,CirGate*> (ifNotVert, out)); }
+
    void setMarked(bool flag) const {ifmarked=flag;}
    bool getMarked() const {return ifmarked;}
    void dfsTraverse();
@@ -73,10 +63,8 @@ private:
 protected:
    //my
    //for derived class constructor
-   CirGate(unsigned lineNoIn, unsigned gidIn, unsigned typeIdIn): lineNo(lineNoIn), gid(gidIn), typeId(typeIdIn) {}
+   CirGate(unsigned lineNoIn, unsigned gidIn ): lineNo(lineNoIn), gid(gidIn) {}
    unsigned gid;
-   unsigned typeId=0;
-   static vector<string> typeString;
    string name;
    //my uninitialized memebers
    vector<pair<bool,CirGate*>> fins;
@@ -86,50 +74,54 @@ protected:
 class CirPiGate: public CirGate
 {
 public:
-   CirPiGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn, 1) {} 
+   CirPiGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn) {} 
    CirPiGate() {}
    ~CirPiGate() {}
    virtual void printGate() const;
+   virtual string getTypeStr() const { return "PI"; }//TODO
 private:
 };
 
 class CirPoGate: public CirGate
 {
 public:
-   CirPoGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn, 2) { fins.reserve(1); }
+   CirPoGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn) { fins.reserve(1); }
    CirPoGate() {}
    ~CirPoGate() {}
    virtual void printGate() const;
+   virtual string getTypeStr() const { return "PO"; }//TODO
 private:
 };
 
 class CirAigGate: public CirGate
 {
 public:
-   CirAigGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn, 3) { fins.reserve(2); }
+   CirAigGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn) { fins.reserve(2); }
    CirAigGate() {}
    ~CirAigGate() {}
    virtual void printGate() const;
+   virtual string getTypeStr() const { return "AIG"; }//TODO
 private:
 };
 
 class CirConGate: public CirGate
 {
 public:
-   CirConGate(unsigned lineNoIn): CirGate(lineNoIn, 0, 4) {}
-   CirConGate() {}
+   CirConGate(): CirGate(0, 0) {}
    ~CirConGate() {}
    virtual void printGate() const;
+   virtual string getTypeStr() const { return "CONST"; }//TODO
 private:
 };
 
 class CirFloGate: public CirGate
 {
 public:
-   CirFloGate(unsigned lineNoIn,unsigned gidIn): CirGate(lineNoIn, gidIn, 0) {}
+   CirFloGate(unsigned lineNoIn,unsigned gidIn): CirGate(lineNoIn, gidIn) {}
    CirFloGate() {}
    ~CirFloGate() {}
    virtual void printGate() const;
+   virtual string getTypeStr() const { return "UNDEF"; }//TODO
 private:
 };
 

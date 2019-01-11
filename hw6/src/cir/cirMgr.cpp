@@ -267,7 +267,7 @@ CirMgr::readCircuit(const string& fileName)
       //detect constant gate
       if (in1Li[i]/2==0||in2Li[i]/2==0)
       {
-         gates.push_back( new CirConGate(lineNo+1) );
+         gates.push_back( new CirConGate() );
       } else {}
       ++lineNo;
    }
