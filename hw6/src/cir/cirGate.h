@@ -51,8 +51,8 @@ public:
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
    static void setRefMark() { refMark++; }
-   void dfsTraverse();
-   bool dfsSearch(CirGate* target);
+   void dfsTraverse() const;
+   bool dfsSearch(CirGate* target) const;
    static unsigned count;
 
 private:

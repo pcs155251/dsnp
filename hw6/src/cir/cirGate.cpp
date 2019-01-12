@@ -131,9 +131,9 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
 
 
 void
-CirGate::dfsTraverse() 
+CirGate::dfsTraverse() const 
 {
-   for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
+   for ( vector<pair<bool,CirGate*>>::const_iterator it=fins.begin(); it!=fins.end(); ++it)
    {
       if (!(it->second->isMarked()))
       {
@@ -149,7 +149,7 @@ CirGate::dfsTraverse()
 }
 
 bool
-CirGate::dfsSearch( CirGate* target) 
+CirGate::dfsSearch( CirGate* target) const
 {
    if ( this == target )
    {
@@ -157,7 +157,7 @@ CirGate::dfsSearch( CirGate* target)
    }
    else
    {
-      for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); ++it)
+      for ( vector<pair<bool,CirGate*>>::const_iterator it=fins.begin(); it!=fins.end(); ++it)
       {
          if (!(it->second->isMarked()))
          {

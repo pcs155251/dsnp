@@ -290,9 +290,7 @@ CirMgr::readCircuit(const string& fileName)
          getline( iname, tmpstring);
          pouts[pos]->setNameStr( tmpstring );
       }
-      else
-      {
-      }
+      else{}
    }
 
    //detected undefined gate
@@ -313,12 +311,11 @@ CirMgr::readCircuit(const string& fileName)
          floats.push_back( tmp );
       }
       else {}
-      if (getGate(in1Li[i]/2==0||in2Li[i]/2==0))
+      if (getGate(in1Li[i]/2)==0||getGate(in2Li[i]/2)==0)
       {
          floatfins.push_back( aigs[i] );
       } else {}
    }
-    
 
    //connection
    sort( gates.begin(), gates.end(), compareGateGate );
@@ -330,7 +327,7 @@ CirMgr::readCircuit(const string& fileName)
       pouts[i]->addFin( ifnoRevert, getGate(addId) );
       getGate(addId)->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
    }
-   //connect and
+   //connect and gates
    for (unsigned i=0; i!=aigs.size(); ++i)
    {
       unsigned f1Id = in1Li[i]/2;
@@ -343,12 +340,12 @@ CirMgr::readCircuit(const string& fileName)
       getGate(f2Id)->addFout( f2nonRevert, getGate(aigs[i]->getId()) );
    }
 
-   //find bad gates
    /*
-   for (size_t i=0; i!=gates.size(); ++i)
+   //find bad gates
+   if (gates.size()!=0)
    {
-      gates[i]->setMarked(false);
-   }
+      gates[0]->setRefMark();
+   } else {}
    for (unsigned i=0; i!=gates.size(); ++i)
    {
       for (unsigned ii=0; ii!=pins.size(); ++ii)
@@ -362,10 +359,10 @@ CirMgr::readCircuit(const string& fileName)
    }
    sort( floatfins.begin(), floatfins.end(), compareGateGate );
 
-   for (size_t i=0; i!=gates.size(); ++i)
+   if (gates.size()!=0)
    {
-      gates[i]->setMarked(false);
-   }
+      gates[0]->setRefMark();
+   } else {}
    for (unsigned i=0; i!=gates.size(); ++i)
    {
       for (unsigned ii=0; ii!=pouts.size(); ++ii)
