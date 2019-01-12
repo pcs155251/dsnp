@@ -216,7 +216,8 @@ CirMgr::readCircuit(const string& fileName)
    getline( iss, tmpstring, ' ');//A
    andN = stoi( tmpstring );
 
-   gates.reserve( maxN );
+   gates.reserve( maxN+1 );
+   gates.push_back( new CirConGate() );
    pins.reserve( inN );
    pouts.reserve( outN );
    aigs.reserve( andN );
@@ -264,11 +265,6 @@ CirMgr::readCircuit(const string& fileName)
       gates.push_back( tmp );
       aigs.push_back( tmp );
 
-      //detect constant gate
-      if (in1Li[i]/2==0||in2Li[i]/2==0)
-      {
-         gates.push_back( new CirConGate() );
-      } else {}
       ++lineNo;
    }
    //set name
@@ -297,11 +293,13 @@ CirMgr::readCircuit(const string& fileName)
    sort( gates.begin(), gates.end(), compareGateGate );
    for (unsigned i=0; i!=aigs.size(); ++i)
    { 
+      bool ifFloatFin = false;
       if (getGate(in1Li[i]/2)==0)
       {
          tmp = new CirFloGate(0,in1Li[i]/2);
          gates.push_back( tmp );
          floats.push_back( tmp );
+         ifFloatFin = true;
       }
       else {}
       if (getGate(in2Li[i]/2)==0)
@@ -309,9 +307,10 @@ CirMgr::readCircuit(const string& fileName)
          tmp = new CirFloGate(0,in2Li[i]/2);
          gates.push_back( tmp );
          floats.push_back( tmp );
+         ifFloatFin = true;
       }
       else {}
-      if (getGate(in1Li[i]/2)==0||getGate(in2Li[i]/2)==0)
+      if (ifFloatFin)
       {
          floatfins.push_back( aigs[i] );
       } else {}
@@ -340,42 +339,48 @@ CirMgr::readCircuit(const string& fileName)
       getGate(f2Id)->addFout( f2nonRevert, getGate(aigs[i]->getId()) );
    }
 
-   /*
    //find bad gates
-   if (gates.size()!=0)
-   {
-      gates[0]->setRefMark();
-   } else {}
    for (unsigned i=0; i!=gates.size(); ++i)
    {
+      bool ifFindPin = false;
       for (unsigned ii=0; ii!=pins.size(); ++ii)
       {
-        //cout<<!(gates[i]->dfsSearch( pins[ii]))<<endl;
-        if ( (gates[i]->dfsSearch( pins[ii]))==false )
+        CirGate::setRefMark();
+        if (gates[i]->dfsSearch(pins[ii]))
         {
-           floatfins.push_back(gates[i]);
-        } else {}
+          ifFindPin = true;
+          break;
+        } else{}
       }
+      if ( !ifFindPin && gates[i]->getTypeStr()!="UNDEF" && gates[i]->getTypeStr()!="CONST" )
+      {
+        CirGate::setRefMark();
+         if (!gates[i]->dfsSearch(gates[0]))
+         {
+           floatfins.push_back(gates[i]);
+         } else {}
+      } else {}
    }
    sort( floatfins.begin(), floatfins.end(), compareGateGate );
 
-   if (gates.size()!=0)
-   {
-      gates[0]->setRefMark();
-   } else {}
    for (unsigned i=0; i!=gates.size(); ++i)
    {
+      bool ifFindPout = false;
       for (unsigned ii=0; ii!=pouts.size(); ++ii)
       {
-        //cout<<!(pouts[ii]->dfsSearch( gates[i]))<<endl;
-        if ( (pouts[ii]->dfsSearch( gates[i]))==false )
+        CirGate::setRefMark();
+        if (pouts[ii]->dfsSearch(gates[i]))
         {
-           notused.push_back(gates[i]);
+          ifFindPout = true;
+          break;
         } else {}
+      }
+      if ( !ifFindPout && gates[i]->getTypeStr()!="UNDEF" && gates[i]->getTypeStr()!="CONST" )
+      {
+        notused.push_back(gates[i]);
       }
    }
    sort( notused.begin(), notused.end(), compareGateGate );
-   */
 
    return true;
 }
@@ -410,10 +415,7 @@ CirMgr::printNetlist() const
 {
    //reset count and mark first;
    CirGate::count=0;
-   if ( gates.size()!=0 )
-   {
-      gates[0]->setRefMark();
-   } else {}
+   CirGate::setRefMark();
 
    cout<<endl;
    for (size_t i=0; i!=pouts.size(); ++i)
@@ -448,19 +450,25 @@ CirMgr::printPOs() const
 void
 CirMgr::printFloatGates() const
 {
-   cout << "Gates with floating fanin(s):";
-   for (unsigned i=0; i!=floatfins.size(); ++i)
+   if (floatfins.size()!=0)
    {
-      cout<<" "<<floatfins[i]->getId();
-   }
-   cout << endl;
+      cout << "Gates with floating fanin(s):";
+      for (unsigned i=0; i!=floatfins.size(); ++i)
+      {
+         cout<<" "<<floatfins[i]->getId();
+      }
+      cout << endl;
+   } else {}
 
-   cout << "Gates defined but not used :";
-   for (unsigned i=0; i!=notused.size(); ++i)
+   if (notused.size()!=0)
    {
-      cout<<" "<<notused[i]->getId();
-   }
-   cout << endl;
+      cout << "Gates defined but not used  :";
+      for (unsigned i=0; i!=notused.size(); ++i)
+      {
+         cout<<" "<<notused[i]->getId();
+      }
+      cout << endl;
+   } else {}
 }
 
 void
