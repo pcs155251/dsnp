@@ -342,7 +342,7 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //find bad gates
-   for (unsigned i=0; i!=gates.size(); ++i)
+   for (unsigned i=1; i!=gates.size(); ++i)
    {
       bool ifFindPin = false;
       for (unsigned ii=0; ii!=pins.size(); ++ii)
@@ -354,10 +354,10 @@ CirMgr::readCircuit(const string& fileName)
           break;
         } else{}
       }
-      if ( !ifFindPin && gates[i]->getTypeStr()!="UNDEF" && gates[i]->getTypeStr()!="CONST" )
+      if ( !ifFindPin && gates[i]->getTypeStr()!="UNDEF" )
       {
-        CirGate::setRefMark();
-         if (!gates[i]->dfsSearch(gates[0]))
+         CirGate::setRefMark();
+         if (!gates[i]->dfsSearch(gates[0]))//const can serve as pin here
          {
            floatfins.push_back(gates[i]);
          } else {}
@@ -483,3 +483,40 @@ CirMgr::writeGate(ostream& outfile, CirGate *g) const
 {
 }
 
+/**********************************************************/
+/*   class CirMgr member functions for circuit printing   */
+/**********************************************************/
+
+void 
+CirMgr::sweep()
+{
+   /*
+   notused.clear();
+   vector<CirGate*> beRemoved;
+   for (unsigned i=1; i!=gates.size(); ++i)
+   {
+      bool ifFindPout = false;
+      for (unsigned ii=0; ii!=pouts.size(); ++ii)
+      {
+         CirGate::setRefMark();
+         if (pouts[ii]->dfsSearch(gates[i]))
+         {
+           ifFindPout = true;
+           break;
+         } else{}
+      }
+      if ( !ifFindPout )
+      {
+         if ( gates[i]->getTypeStr() == "PO" )
+         {
+            notused.push_back(gates[i]);
+         }
+         else
+         {
+            beRemoved.push_back(gates[i]);
+         }
+      } else {}
+   }
+   sort( beRemoved.begin(), beRemoved.end(), compareGateGate );
+   */
+}
