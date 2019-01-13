@@ -25,12 +25,12 @@ extern CirMgr *cirMgr;
 class CirMgr
 {
 public:
-   CirMgr() {}
-   ~CirMgr() {} 
+   CirMgr(){}
+   ~CirMgr();
 
    // Access functions
    // return '0' if "gid" corresponds to an undefined gate.
-   CirGate* getGate(unsigned gid) const { return 0; }
+   CirGate* getGate(unsigned gid) const;
 
    // Member functions about circuit construction
    bool readCircuit(const string&);
@@ -62,6 +62,14 @@ public:
 private:
    ofstream           *_simLog;
 
+   //my
+   vector<CirGate*> gates;
+   vector<CirGate*> pins;
+   vector<CirGate*> pouts;
+   vector<CirGate*> aigs;
+   vector<CirGate*> floats;
+   vector<CirGate*> floatfins;
+   vector<CirGate*> notused;
 };
 
 #endif // CIR_MGR_H
