@@ -10,6 +10,7 @@
 #define CIR_MGR_H
 
 #include <vector>
+#include <map>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -63,7 +64,8 @@ private:
    ofstream           *_simLog;
 
    //my
-   vector<CirGate*> gates;
+   //vector<CirGate*> gates;
+   map<unsigned,CirGate*> gates;
    vector<CirGate*> pins;
    vector<CirGate*> pouts;
    vector<CirGate*> aigs;

@@ -167,9 +167,13 @@ compareGateGate( const CirGate* g0, const CirGate* g1 )
 /**************************************************************/
 CirMgr::~CirMgr()
 {
-   for (unsigned i=0; i!=gates.size(); ++i)
+   //for (unsigned i=0; i!=gates.size(); ++i)
+   //{
+   //   delete gates[i];
+   //}
+   for ( map<unsigned,CirGate*>::iterator it=gates.begin(); it!=gates.end(); ++it)
    {
-      delete gates[i];
+      delete it->second;
    }
 }
 
@@ -178,6 +182,7 @@ CirMgr::getGate(unsigned gid) const
 { 
    //TODO make sure is sorted before getGate
    //TODO may have problem when declaring as const functions
+   /*
    vector<CirGate*>::const_iterator pos = lower_bound( gates.begin(), gates.end(), gid, compareGateId);
    if ( pos==gates.end() || (*pos)->getId()!=gid )
    {
@@ -186,6 +191,16 @@ CirMgr::getGate(unsigned gid) const
    else
    {
       return (*pos);
+   }
+   */
+   map<unsigned,CirGate*>::const_iterator pos = gates.find( gid );
+   if ( pos==gates.end() )
+   {
+      return 0;
+   }
+   else
+   {
+      return pos->second;
    }
 }
 
@@ -218,8 +233,8 @@ CirMgr::readCircuit(const string& fileName)
    getline( iss, tmpstring, ' ');//A
    andN = stoi( tmpstring );
 
-   gates.reserve( maxN+1 );
-   gates.push_back( new CirConGate() );
+   cerr<<"adding const gate"<<endl;
+   gates.insert( pair<unsigned,CirGate*> (0,new CirConGate()) );
    pins.reserve( inN );
    pouts.reserve( outN );
    aigs.reserve( andN );
@@ -232,7 +247,8 @@ CirMgr::readCircuit(const string& fileName)
       getline( inFile, tmpstring );
       lit = stoi( tmpstring );
       tmp = new CirPiGate(lineNo+1,lit/2);
-      gates.push_back( tmp );
+      cerr<<"pi "<<lit/2<<endl;
+      gates.insert( pair<unsigned,CirGate*> (lit/2,tmp) );
       pins.push_back( tmp );
       ++lineNo;
    }
@@ -244,7 +260,8 @@ CirMgr::readCircuit(const string& fileName)
       getline( inFile, tmpstring );
       lit = stoi( tmpstring );
       tmp = new CirPoGate(lineNo+1,maxN+i+1);
-      gates.push_back( tmp );
+      cerr<<"po "<<maxN+i+1<<endl;
+      gates.insert( pair<unsigned,CirGate*> (maxN+i+1,tmp) );
       pouts.push_back( tmp );
       toPoLi[i] = lit;
       ++lineNo;
@@ -264,7 +281,8 @@ CirMgr::readCircuit(const string& fileName)
       getline( isand, tmpstring, ' ');
       in2Li[i] = stoi( tmpstring );
       tmp = new CirAigGate(lineNo+1,lit/2);
-      gates.push_back( tmp );
+      cerr<<"aig "<<lit/2<<endl;
+      gates.insert( pair<unsigned,CirGate*> (lit/2,tmp) );
       aigs.push_back( tmp );
 
       ++lineNo;
@@ -292,26 +310,38 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //detected undefined gate
-   sort( gates.begin(), gates.end(), compareGateGate );
+   cerr<<"L1: ";
+   for (unsigned i=0; i!=in1Li.size(); ++i) cerr<<in1Li[i]/2<<", ";
+   cerr<<endl;
+   cerr<<"L2: ";
+   for (unsigned i=0; i!=in2Li.size(); ++i) cerr<<in2Li[i]/2<<", ";
+   cerr<<endl;
+
+   cerr<<"gate: ";
+   for (auto it=gates.begin(); it!=gates.end(); ++it ) cerr<<it->first<<", ";
+   cerr<<endl;
+      
+   cerr<<"aig: ";
    for (unsigned i=0; i!=aigs.size(); ++i)
    { 
+      cerr<<aigs[i]->getId()<<endl;
       bool ifFloatFin = false;
       if (getGate(in1Li[i]/2)==0)
       {
          tmp = new CirFloGate(0,in1Li[i]/2);
-         gates.push_back( tmp );
+         cerr<<"undef1 "<<in1Li[i]/2<<endl;
+         gates.insert( pair<unsigned,CirGate*> (in1Li[i]/2,tmp) );
          floats.push_back( tmp );
          ifFloatFin = true;
-      }
-      else {}
+      } else {}
       if (getGate(in2Li[i]/2)==0)
       {
          tmp = new CirFloGate(0,in2Li[i]/2);
-         gates.push_back( tmp );
+         cerr<<"undef2 "<<in2Li[i]/2<<endl;
+         gates.insert( pair<unsigned,CirGate*> (in2Li[i]/2,tmp) );
          floats.push_back( tmp );
          ifFloatFin = true;
-      }
-      else {}
+      } else {}
       if (ifFloatFin)
       {
          floatfins.push_back( aigs[i] );
@@ -319,14 +349,24 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //connection
-   sort( gates.begin(), gates.end(), compareGateGate );
    //connect po
    for (unsigned i=0; i!=pouts.size(); ++i)
    {
       unsigned addId = toPoLi[i]/2;
       bool ifnoRevert = !((toPoLi[i])%2);
-      pouts[i]->addFin( ifnoRevert, getGate(addId) );
-      getGate(addId)->addFout( getGate(pouts[i]->getId()) );
+      if ( getGate(addId)!= 0)
+      {
+         pouts[i]->addFin( ifnoRevert, getGate(addId) );
+         getGate(addId)->addFout( getGate(pouts[i]->getId()) );
+      }
+      else
+      {
+         tmp = new CirFloGate(0,addId);
+         gates.insert( pair<unsigned,CirGate*> (addId,tmp) );
+         floats.push_back( tmp );
+         pouts[i]->addFin( ifnoRevert, tmp );
+         tmp->addFout( getGate(pouts[i]->getId()) );
+      }
    }
    //connect and gates
    for (unsigned i=0; i!=aigs.size(); ++i)
@@ -342,24 +382,24 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //find bad gates
-   for (unsigned i=1; i!=gates.size(); ++i)
+   for ( map<unsigned,CirGate*>::iterator it=gates.begin(); it!=gates.end(); ++it )
    {
       bool ifFindPin = false;
       for (unsigned ii=0; ii!=pins.size(); ++ii)
       {
         CirGate::setRefMark();
-        if (gates[i]->dfsSearch(pins[ii]))
+        if (it->second->dfsSearch(pins[ii]))
         {
           ifFindPin = true;
           break;
         } else{}
       }
-      if ( !ifFindPin && gates[i]->getTypeStr()!="UNDEF" )
+      if ( !ifFindPin && it->second->getTypeStr()!="UNDEF" )
       {
          CirGate::setRefMark();
-         if (!gates[i]->dfsSearch(gates[0]))//const can serve as pin here
+         if ( !(it->second->dfsSearch(gates.begin()->second)) )//const can serve as pin here
          {
-           floatfins.push_back(gates[i]);
+            floatfins.push_back(it->second);
          } else {}
       } else {}
    }
