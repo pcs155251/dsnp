@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <iostream>
 #include "cirDef.h"
 #include "sat.h"
@@ -46,8 +47,8 @@ public:
    void setNameStr( const string& nameIn ) { name = nameIn; }
    string getNameStr() const { return name; }
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> (ifNotVert, in) ); }
-   void addFout(bool ifNotVert, CirGate* out) { fouts.push_back( pair<bool,CirGate*> (ifNotVert, out) ); }
-   bool noFanout() { return (fouts.size()==0); }
+   void addFout( CirGate* out) { fouts.insert( out ); }
+   bool noFanout() { return fouts.empty(); }
 
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
@@ -71,7 +72,8 @@ protected:
    unsigned gid;
    string name;
    vector<pair<bool,CirGate*>> fins;
-   vector<pair<bool,CirGate*>> fouts;
+   //unordered_multiset<CirGate*> fouts;
+   multiset<CirGate*> fouts;
 };
 
 class CirPiGate: public CirGate

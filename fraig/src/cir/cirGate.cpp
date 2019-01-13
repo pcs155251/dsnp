@@ -107,7 +107,7 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
 
    if ( this->isMarked() )
    {
-      if (level > 0 && fouts.size()!=0 )
+      if (level > 0 && !fouts.empty() )
       {
          cout<<" (*)"<<endl;
       }  
@@ -122,10 +122,25 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
       if (level > 0)
       {
          this->setMarked();
-         for (unsigned i=0; i!=fouts.size(); ++i)
-         {  
-            fouts[i].second->reportFanout(level-1, offset+1, fouts[i].first );
+         for ( multiset<CirGate*>::const_iterator it = fouts.cbegin(); it != fouts.cend(); ++it )
+         //for ( unordered_multiset<CirGate*>::const_iterator it = fouts.cbegin(); it != fouts.cend(); ++it )
+         {
+            bool ifNotVert; 
+            for ( unsigned i=0; i!=(*it)->fins.size(); ++i )
+            {
+               if ( (*it)->fins[i].second == this )
+               {  
+                  ifNotVert = (*it)->fins[i].first;
+                  break;
+               }
+            }
+            //assert( finIt != (*it)->fins.cend() );
+            (*it)->reportFanout( level-1, offset+1, ifNotVert );
          }
+         //for (unsigned i=0; i!=fouts.size(); ++i)
+         //{  
+         //   fouts[i].second->reportFanout(level-1, offset+1, fouts[i].first );
+         //}
       } else {}
    }
 }

@@ -326,7 +326,7 @@ CirMgr::readCircuit(const string& fileName)
       unsigned addId = toPoLi[i]/2;
       bool ifnoRevert = !((toPoLi[i])%2);
       pouts[i]->addFin( ifnoRevert, getGate(addId) );
-      getGate(addId)->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
+      getGate(addId)->addFout( getGate(pouts[i]->getId()) );
    }
    //connect and gates
    for (unsigned i=0; i!=aigs.size(); ++i)
@@ -337,8 +337,8 @@ CirMgr::readCircuit(const string& fileName)
       bool f2nonRevert = !((in2Li[i])%2);
       aigs[i]->addFin( f1nonRevert, getGate(f1Id) );
       aigs[i]->addFin( f2nonRevert, getGate(f2Id) );
-      getGate(f1Id)->addFout( f1nonRevert, getGate(aigs[i]->getId()) );
-      getGate(f2Id)->addFout( f2nonRevert, getGate(aigs[i]->getId()) );
+      getGate(f1Id)->addFout( getGate(aigs[i]->getId()) );
+      getGate(f2Id)->addFout( getGate(aigs[i]->getId()) );
    }
 
    //find bad gates
@@ -483,40 +483,3 @@ CirMgr::writeGate(ostream& outfile, CirGate *g) const
 {
 }
 
-/**********************************************************/
-/*   class CirMgr member functions for circuit printing   */
-/**********************************************************/
-
-void 
-CirMgr::sweep()
-{
-   /*
-   notused.clear();
-   vector<CirGate*> beRemoved;
-   for (unsigned i=1; i!=gates.size(); ++i)
-   {
-      bool ifFindPout = false;
-      for (unsigned ii=0; ii!=pouts.size(); ++ii)
-      {
-         CirGate::setRefMark();
-         if (pouts[ii]->dfsSearch(gates[i]))
-         {
-           ifFindPout = true;
-           break;
-         } else{}
-      }
-      if ( !ifFindPout )
-      {
-         if ( gates[i]->getTypeStr() == "PO" )
-         {
-            notused.push_back(gates[i]);
-         }
-         else
-         {
-            beRemoved.push_back(gates[i]);
-         }
-      } else {}
-   }
-   sort( beRemoved.begin(), beRemoved.end(), compareGateGate );
-   */
-}
