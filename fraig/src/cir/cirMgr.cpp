@@ -467,6 +467,32 @@ CirMgr::printNetlist() const
    {
       pouts[i]->dfsTraverseToIn( true, pathIds );
    }
+   /*
+   CirGate::count = 0;
+   cout<<endl;
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      bool curStates;
+      stack<CirGate*> refGates;
+      stack<unsigned> curFins;
+      curFins.push( 0 );
+      CirGate* token = pouts[i];
+      CirGate* lastGate = 0;
+      CirGate::setRefMark();
+
+      while ( token!=0 )
+      {
+         lastGate = token;
+         token = lastGate->dfsTraverseInExp( curStates, curFins, refGates );
+         if ( token==0 ) break;
+         if ( curStates==true&&lastGate->getTypeStr()!="UNDEF" )
+         {
+            lastGate->printGate();
+            ++CirGate::count;
+         } else {}
+      }
+   }
+   */
 }
 
 void

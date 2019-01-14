@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <stack>
 #include <iostream>
 #include "cirDef.h"
 #include "sat.h"
@@ -56,7 +57,7 @@ public:
    void eraseFout( CirGate* target );
    bool noFanout() { return fouts.empty(); }
 
-
+   //CirGate* dfsTraverseInExp( bool& curStates, stack<unsigned>& curFin, stack<CirGate*>& refGates ); 
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
    static void setRefMark() { refMark++; }

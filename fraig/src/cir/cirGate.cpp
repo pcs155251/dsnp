@@ -140,6 +140,39 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
    }
 }
 
+/*
+CirGate*
+CirGate::dfsTraverseInExp( bool& curStates, stack<unsigned>& curFins, stack<CirGate*>& refGates ) 
+{
+   if ( curFins.top()<fins.size() && (!this->isMarked()) )
+   {
+      refGates.push( this );
+      CirGate* child = fins[curFins.top()].second();
+      curFins.push( 0 );
+      curStates = false;
+      return child;
+   }
+   else 
+   {
+      curStates = true; 
+      if (this->isMarked()) curStates = false;
+      this->setMarked();
+      curFins.pop();
+      if ( !curFins.empty() )
+      {
+         ++curFins.top();
+         CirGate* parent = refGates.top();
+         refGates.pop();
+         return parent;
+      }
+      else
+      {
+         return 0;
+      }
+   }
+}
+*/
+
 void
 CirGate::dfsTraverseToIn( bool ifprint, vector<unsigned> &pathIds ) const 
 {
