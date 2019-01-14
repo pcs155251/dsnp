@@ -17,7 +17,7 @@ using namespace std;
 // TODO: define your own typedef or enum
 
 class CirGate;
-struct CompareGate;
+struct CompareGateId;
 class CirMgr;
 class SatSolver;
 

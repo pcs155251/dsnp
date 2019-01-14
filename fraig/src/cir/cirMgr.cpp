@@ -153,7 +153,7 @@ parseError(CirParseError err)
 /*    for sorting gates                                       */
 /**************************************************************/
 bool
-CompareGate::operator()(const CirGate* lgate, const CirGate* rgate) const
+CompareGateId::operator()(const CirGate* lgate, const CirGate* rgate) const
 {
    return ( lgate->getId() < rgate->getId() );
 }
@@ -217,7 +217,8 @@ CirMgr::readCircuit(const string& fileName)
    gates.insert( pair<unsigned,CirGate*> (0,new CirConGate()) );
    pins.reserve( inN );
    pouts.reserve( outN );
-   aigs.reserve( andN );
+   vector<CirGate*> aigtemps;
+   aigtemps.reserve( andN );
 
    CirGate* tmp;
    //in gates
@@ -263,7 +264,7 @@ CirMgr::readCircuit(const string& fileName)
       tmp = new CirAigGate(lineNo+1,lit/2);
       if (IFDEBUG)cerr<<"aig "<<lit/2<<endl;
       gates.insert( pair<unsigned,CirGate*> (lit/2,tmp) );
-      aigs.push_back( tmp );
+      aigtemps.push_back( tmp );
 
       ++lineNo;
    }
@@ -305,9 +306,9 @@ CirMgr::readCircuit(const string& fileName)
    }
       
    if (IFDEBUG) cerr<<"aig: ";
-   for (unsigned iaig=0; iaig!=aigs.size(); ++iaig)
+   for (unsigned iaig=0; iaig!=aigtemps.size(); ++iaig)
    { 
-      if (IFDEBUG) cerr<<aigs[iaig]->getId()<<endl;
+      if (IFDEBUG) cerr<<aigtemps[iaig]->getId()<<endl;
       bool ifFloatFin = false;
 
       unsigned id1 = in1Li[iaig]/2;
@@ -333,7 +334,6 @@ CirMgr::readCircuit(const string& fileName)
          tmp = new CirFloGate(0,id2);
          if (IFDEBUG) cerr<<"undef2 "<<id2<<endl;
          gates.insert( pair<unsigned,CirGate*> (id2,tmp) );
-         //floats.push_back( tmp );
          floats.insert( tmp );
          ifFloatFin = true;
       }
@@ -344,7 +344,7 @@ CirMgr::readCircuit(const string& fileName)
 
       if (ifFloatFin)
       {
-         floatfins.insert( aigs[iaig] );
+         floatfins.insert( aigtemps[iaig] );
       } else {}
    }
 
@@ -363,23 +363,22 @@ CirMgr::readCircuit(const string& fileName)
       {
          tmp = new CirFloGate(0,addId);
          gates.insert( pair<unsigned,CirGate*> (addId,tmp) );
-         //floats.push_back( tmp );
          floats.insert( tmp );
          pouts[i]->addFin( ifnoRevert, tmp );
          tmp->addFout( getGate(pouts[i]->getId()) );
       }
    }
    //connect and gates
-   for (unsigned i=0; i!=aigs.size(); ++i)
+   for (unsigned i=0; i!=aigtemps.size(); ++i)
    {
       unsigned f1Id = in1Li[i]/2;
       bool f1nonRevert = !((in1Li[i])%2);
       unsigned f2Id = in2Li[i]/2;
       bool f2nonRevert = !((in2Li[i])%2);
-      aigs[i]->addFin( f1nonRevert, getGate(f1Id) );
-      aigs[i]->addFin( f2nonRevert, getGate(f2Id) );
-      getGate(f1Id)->addFout( getGate(aigs[i]->getId()) );
-      getGate(f2Id)->addFout( getGate(aigs[i]->getId()) );
+      aigtemps[i]->addFin( f1nonRevert, getGate(f1Id) );
+      aigtemps[i]->addFin( f2nonRevert, getGate(f2Id) );
+      getGate(f1Id)->addFout( getGate(aigtemps[i]->getId()) );
+      getGate(f2Id)->addFout( getGate(aigtemps[i]->getId()) );
    }
 
    //find bad gates
@@ -412,12 +411,18 @@ CirMgr::readCircuit(const string& fileName)
          notused.insert(pins[i]);
       } else {}
    }
-   for (unsigned i=0; i!=aigs.size(); ++i)
+   for (unsigned i=0; i!=aigtemps.size(); ++i)
    {
-      if (aigs[i]->noFanout())
+      if (aigtemps[i]->noFanout())
       {
-         notused.insert(aigs[i]);
+         notused.insert(aigtemps[i]);
       } else {}
+   }
+
+   //consturct correct aig gates
+   for (unsigned i=0; i!=aigtemps.size(); ++i)
+   {
+      aigs.insert( aigtemps[i] );
    }
 
    return true;
@@ -489,7 +494,7 @@ CirMgr::printFloatGates() const
    if (!floatfins.empty())
    {
       cout << "Gates with floating fanin(s):";
-      for (set<CirGate*,CompareGate>::iterator it=floatfins.begin(); it!=floatfins.end(); ++it )
+      for (set<CirGate*,CompareGateId>::iterator it=floatfins.begin(); it!=floatfins.end(); ++it )
       {
          cout<<" "<<(*it)->getId();
       }
@@ -499,7 +504,7 @@ CirMgr::printFloatGates() const
    if (!notused.empty())
    {
       cout << "Gates defined but not used  :";
-      for (set<CirGate*,CompareGate>::iterator it=notused.begin(); it!=notused.end(); ++it )
+      for (set<CirGate*,CompareGateId>::iterator it=notused.begin(); it!=notused.end(); ++it )
       {
          cout<<" "<<(*it)->getId();
       }

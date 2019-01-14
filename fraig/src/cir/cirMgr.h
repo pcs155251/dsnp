@@ -24,7 +24,7 @@ using namespace std;
 
 extern CirMgr *cirMgr;
 
-struct CompareGate
+struct CompareGateId
 {
    bool operator()(const CirGate* lgate, const CirGate* rgate) const;
 };
@@ -70,16 +70,13 @@ private:
    ofstream           *_simLog;
 
    //my
-   //vector<CirGate*> gates;
    map<unsigned,CirGate*> gates;
    vector<CirGate*> pins;
    vector<CirGate*> pouts;
-   vector<CirGate*> aigs;
-   vector<CirGate*> floats;
-   //vector<CirGate*> floatfins;
-   //vector<CirGate*> notused;
-   set<CirGate*,CompareGate> floatfins;
-   set<CirGate*,CompareGate> notused;
+   set<CirGate*,CompareGateId> aigs;
+   set<CirGate*,CompareGateId> floats;
+   set<CirGate*,CompareGateId> floatfins;
+   set<CirGate*,CompareGateId> notused;
 };
 
 #endif // CIR_MGR_H
