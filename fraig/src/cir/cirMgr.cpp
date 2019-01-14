@@ -305,16 +305,18 @@ CirMgr::readCircuit(const string& fileName)
    }
       
    if (IFDEBUG) cerr<<"aig: ";
-   for (unsigned i=0; i!=aigs.size(); ++i)
+   for (unsigned iaig=0; iaig!=aigs.size(); ++iaig)
    { 
       if (IFDEBUG) cerr<<aigs[i]->getId()<<endl;
       bool ifFloatFin = false;
-      CirGate* gate1 = getGate(in1Li[i]/2);
+
+      unsigned id1 = in1Li[iaig]/2;
+      CirGate* gate1 = getGate(id1);
       if (gate1==0)
       {
-         tmp = new CirFloGate(0,in1Li[i]/2);
-         if (IFDEBUG) cerr<<"undef1 "<<in1Li[i]/2<<endl;
-         gates.insert( pair<unsigned,CirGate*> (in1Li[i]/2,tmp) );
+         tmp = new CirFloGate(0,id1);
+         if (IFDEBUG) cerr<<"undef1 "<<id1<<endl;
+         gates.insert( pair<unsigned,CirGate*> (id1,tmp) );
          floats.push_back( tmp );
          ifFloatFin = true;
       } 
@@ -323,12 +325,13 @@ CirMgr::readCircuit(const string& fileName)
          ifFloatFin = true;
       } else {}
 
-      CirGate* gate2 = getGate(in2Li[i]/2);
+      unsigned id2 = in2Li[iaig]/2;
+      CirGate* gate2 = getGate(id2);
       if (gate2==0)
       {
-         tmp = new CirFloGate(0,in2Li[i]/2);
-         if (IFDEBUG) cerr<<"undef2 "<<in2Li[i]/2<<endl;
-         gates.insert( pair<unsigned,CirGate*> (in2Li[i]/2,tmp) );
+         tmp = new CirFloGate(0,id2);
+         if (IFDEBUG) cerr<<"undef2 "<<id2<<endl;
+         gates.insert( pair<unsigned,CirGate*> (id2,tmp) );
          floats.push_back( tmp );
          ifFloatFin = true;
       }
