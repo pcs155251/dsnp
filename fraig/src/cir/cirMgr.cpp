@@ -307,7 +307,7 @@ CirMgr::readCircuit(const string& fileName)
    if (IFDEBUG) cerr<<"aig: ";
    for (unsigned iaig=0; iaig!=aigs.size(); ++iaig)
    { 
-      if (IFDEBUG) cerr<<aigs[i]->getId()<<endl;
+      if (IFDEBUG) cerr<<aigs[iaig]->getId()<<endl;
       bool ifFloatFin = false;
 
       unsigned id1 = in1Li[iaig]/2;
@@ -342,7 +342,7 @@ CirMgr::readCircuit(const string& fileName)
 
       if (ifFloatFin)
       {
-         floatfins.insert( aigs[i] );
+         floatfins.insert( aigs[iaig] );
       } else {}
    }
 
