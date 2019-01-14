@@ -30,48 +30,64 @@ using namespace std;
 // Remove unused gates
 // DFS list should NOT be changed
 // UNDEF, float and unused list may be changed
+bool IFDEBUG = false;
+
 void
 CirMgr::sweep()
 {
-   /*
+   //find bad gates
    notused.clear();
    vector<CirGate*> removeList;
-   for (map<unsigned,CirGate*>::iterator it=gates.begin(); it!=gates.end(); ++it )
+   map<unsigned,CirGate*> tmpGates = gates;
+   tmpGates.erase(0);//remove CONST gate
+   for (unsigned i=0; i!=pouts.size(); ++i )
    {
-      bool ifFindPout = false;
-      for (unsigned ii=0; ii!=pouts.size(); ++ii)
+      if (IFDEBUG) cerr<<"pin: "<<pouts[i]->getId()<<endl<<"erase:";
+      vector<unsigned> pathIds;
+      CirGate::setRefMark();
+      pouts[i]->dfsTraverseToIn(false,pathIds);
+      for (unsigned ii=0; ii!=pathIds.size(); ++ii)
       {
-         CirGate::setRefMark();
-         if (pouts[ii]->dfsSearch( it->second ) )
-         {
-           ifFindPout = true;
-           break;
-         } else {}
+         if (IFDEBUG) cerr<<" "<<pathIds[ii];
+         tmpGates.erase(pathIds[ii]);
       }
-      if ( !ifFindPout && it->second->getTypeStr()!="CONST" )
-      {
-         if ( it->second->getTypeStr()=="PI" )
-         {
-            notused.insert( it->second );
-         }
-         else
-         {
-            removeList.push_back( it->second );
-         }
-      }
+      if (IFDEBUG) cerr<<endl;
    }
+   for (map<unsigned,CirGate*>::iterator it=tmpGates.begin(); it!=tmpGates.end(); ++it)
+   {
+      string gateType = it->second->getTypeStr();
+      if ( gateType=="UNDEF" || gateType=="AIG" )
+      { 
+         removeList.push_back( it->second );
+      }
+      else if ( gateType=="PI" )
+      {
+         notused.insert( it->second );
+      } else {} //will never be PO
+   }
+
    for (unsigned i=0; i!=removeList.size(); ++i)
    {
       CirGate* remG = removeList[i];
       cout<<"Sweeping: "<<remG->getTypeStr()<<"("<<remG->getId()<<") removed..."<<endl;
       //remove fanin connection
-      //for (vector<pair<bool,CirGate*>>::iterator it=remG->fins.begin(); it!=remG->fins.end())
-      //{
-      //}
+      for (vector<pair<bool,CirGate*>>::iterator it=remG->fins.begin(); it!=remG->fins.end(); ++it )
+      {
+         CirGate* target = it->second;
+         target->eraseFout( remG );
+      }
       //remove fanout connection
+      for (multiset<CirGate*>::iterator it=remG->fouts.begin(); it!=remG->fouts.end(); ++it )
+      {
+         CirGate* target = *it;
+         target->eraseFin( remG );
+      }
       //remove gate
+      gates.erase( remG->getId() );
+      aigs.erase( remG );
+      floats.erase( remG );
+      floatfins.erase( remG );
    }
-   */
 }
 
 // Recursively simplifying from POs;

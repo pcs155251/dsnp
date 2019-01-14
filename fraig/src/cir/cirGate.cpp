@@ -123,7 +123,6 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
       {
          this->setMarked();
          for ( multiset<CirGate*>::const_iterator it = fouts.cbegin(); it != fouts.cend(); ++it )
-         //for ( unordered_multiset<CirGate*>::const_iterator it = fouts.cbegin(); it != fouts.cend(); ++it )
          {
             bool ifNotVert; 
             for ( unsigned i=0; i!=(*it)->fins.size(); ++i )
@@ -137,10 +136,6 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
             //assert( finIt != (*it)->fins.cend() );
             (*it)->reportFanout( level-1, offset+1, ifNotVert );
          }
-         //for (unsigned i=0; i!=fouts.size(); ++i)
-         //{  
-         //   fouts[i].second->reportFanout(level-1, offset+1, fouts[i].first );
-         //}
       } else {}
    }
 }
@@ -183,6 +178,28 @@ CirGate::dfsTraverseToOut( bool ifprint, vector<unsigned> &pathIds ) const
       this->printGate();
       ++count;
    } else {}
+}
+
+void
+CirGate::eraseFin( CirGate* target )
+{
+   for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); )//do nothing here )
+   {
+      if ( it->second==target)
+      {
+         it = fins.erase(it);
+      }
+      else
+      {
+         ++it;
+      }
+   }
+}
+
+void
+CirGate::eraseFout( CirGate* target )
+{
+   fouts.erase( target );
 }
 
 /**************************************/

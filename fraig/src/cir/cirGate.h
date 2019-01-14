@@ -47,13 +47,13 @@ public:
    void setNameStr( const string& nameIn ) { name = nameIn; }
    string getNameStr() const { return name; }
    //my operation for fanins and fanouts
-   const vector<pair<bool,CirGate*>>& getFins() const {return fins;}
-   const multiset<CirGate*>& getFouts() const {return fouts;}
-   //bool eraseFin( CirGate* target );
-   //bool eraseFout( CirGate* target );
+   vector<pair<bool,CirGate*>> fins;
+   multiset<CirGate*> fouts;
 
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> (ifNotVert, in) ); }
    void addFout( CirGate* out) { fouts.insert( out ); }
+   void eraseFin( CirGate* target );
+   void eraseFout( CirGate* target );
    bool noFanout() { return fouts.empty(); }
 
 
@@ -78,8 +78,6 @@ protected:
    CirGate(unsigned lineNoIn, unsigned gidIn): lineNo(lineNoIn), gid(gidIn) {} //for derived class constructor
    unsigned gid;
    string name;
-   vector<pair<bool,CirGate*>> fins;
-   multiset<CirGate*> fouts;
 };
 
 class CirPiGate: public CirGate
