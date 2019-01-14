@@ -317,7 +317,8 @@ CirMgr::readCircuit(const string& fileName)
          tmp = new CirFloGate(0,id1);
          if (IFDEBUG) cerr<<"undef1 "<<id1<<endl;
          gates.insert( pair<unsigned,CirGate*> (id1,tmp) );
-         floats.push_back( tmp );
+         //floats.push_back( tmp );
+         floats.insert( tmp );
          ifFloatFin = true;
       } 
       else if (gate1->getTypeStr()=="UNDEF")
@@ -332,7 +333,8 @@ CirMgr::readCircuit(const string& fileName)
          tmp = new CirFloGate(0,id2);
          if (IFDEBUG) cerr<<"undef2 "<<id2<<endl;
          gates.insert( pair<unsigned,CirGate*> (id2,tmp) );
-         floats.push_back( tmp );
+         //floats.push_back( tmp );
+         floats.insert( tmp );
          ifFloatFin = true;
       }
       else if (gate2->getTypeStr()=="UNDEF")
@@ -361,7 +363,8 @@ CirMgr::readCircuit(const string& fileName)
       {
          tmp = new CirFloGate(0,addId);
          gates.insert( pair<unsigned,CirGate*> (addId,tmp) );
-         floats.push_back( tmp );
+         //floats.push_back( tmp );
+         floats.insert( tmp );
          pouts[i]->addFin( ifnoRevert, tmp );
          tmp->addFout( getGate(pouts[i]->getId()) );
       }
