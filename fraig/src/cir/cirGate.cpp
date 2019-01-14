@@ -146,45 +146,43 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
 }
 
 void
-CirGate::dfsTraverse() const 
+CirGate::dfsTraverseToIn( bool ifprint, vector<unsigned> &pathIds ) const 
 {
    for ( vector<pair<bool,CirGate*>>::const_iterator it=fins.begin(); it!=fins.end(); ++it)
    {
       if (!(it->second->isMarked()))
       {
-         it->second->dfsTraverse();
+         it->second->dfsTraverseToIn( ifprint, pathIds );
       } else {}
    }
    this->setMarked();
-   if (this->getTypeStr()!="UNDEF")
+   pathIds.push_back( this->getId() );
+
+   if (ifprint && this->getTypeStr()!="UNDEF")
    {
       this->printGate();
       ++count;
    } else {}
 }
 
-bool
-CirGate::dfsSearch( CirGate* target) const
+void
+CirGate::dfsTraverseToOut( bool ifprint, vector<unsigned> &pathIds ) const 
 {
-   if ( this == target )
+   for ( multiset<CirGate*>::const_iterator it=fouts.begin(); it!=fouts.end(); ++it)
    {
-      return true;
-   }
-   else
-   {
-      for ( vector<pair<bool,CirGate*>>::const_iterator it=fins.begin(); it!=fins.end(); ++it)
+      if ( (!(*it)->isMarked()) )
       {
-         if (!(it->second->isMarked()))
-         {
-            if ( it->second->dfsSearch(target) )
-            {  
-               return true;
-            } else {}
-         } else {}
-      }
-      this->setMarked();
-      return false;
+         (*it)->dfsTraverseToOut( ifprint, pathIds );
+      } else {}
    }
+   this->setMarked();
+   pathIds.push_back( this->getId() );
+
+   if (ifprint && this->getTypeStr()!="UNDEF")
+   {
+      this->printGate();
+      ++count;
+   } else {}
 }
 
 /**************************************/

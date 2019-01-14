@@ -382,25 +382,27 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //find bad gates
-   for ( map<unsigned,CirGate*>::iterator it=gates.begin(); it!=gates.end(); ++it )
+   map<unsigned,CirGate*> tmpGates = gates;
+   vector<CirGate*> tmpPins = pins;
+   tmpPins.push_back( gates.begin()->second );
+   for (unsigned i=0; i!=tmpPins.size(); ++i )
    {
-      bool ifFindPin = false;
-      for (unsigned ii=0; ii!=pins.size(); ++ii)
+      if (IFDEBUG) cerr<<"pin: "<<tmpPins[i]->getId()<<endl<<"erase:";
+      vector<unsigned> pathIds;
+      CirGate::setRefMark();
+      tmpPins[i]->dfsTraverseToOut(false,pathIds);
+      for (unsigned ii=0; ii!=pathIds.size(); ++ii)
       {
-        CirGate::setRefMark();
-        if (it->second->dfsSearch(pins[ii]))
-        {
-          ifFindPin = true;
-          break;
-        } else{}
+         if (IFDEBUG) cerr<<" "<<pathIds[ii];
+         tmpGates.erase(pathIds[ii]);
       }
-      if ( !ifFindPin && it->second->getTypeStr()!="UNDEF" )
+      if (IFDEBUG) cerr<<endl;
+   }
+   for (map<unsigned,CirGate*>::iterator it=tmpGates.begin(); it!=tmpGates.end(); ++it)
+   {
+      if ( it->second->getTypeStr()!="UNDEF" )
       {
-         CirGate::setRefMark();
-         if ( !(it->second->dfsSearch(gates.begin()->second)) )//const can serve as pin here
-         {
-            floatfins.insert(it->second);
-         } else {}
+         floatfins.insert( it->second );
       } else {}
    }
 
@@ -460,9 +462,10 @@ CirMgr::printNetlist() const
    CirGate::setRefMark();
 
    cout<<endl;
+   vector<unsigned> pathIds;
    for (unsigned i=0; i!=pouts.size(); ++i)
    {
-      pouts[i]->dfsTraverse();
+      pouts[i]->dfsTraverseToIn( true, pathIds );
    }
 }
 

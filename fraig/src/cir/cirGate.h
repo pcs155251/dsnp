@@ -42,19 +42,26 @@ public:
    void reportFanin(int level) const;
    void reportFanout(int level) const;
    
-   //my
+   //my basic
    unsigned getId() const { return gid; }
    void setNameStr( const string& nameIn ) { name = nameIn; }
    string getNameStr() const { return name; }
+   //my operation for fanins and fanouts
+   const vector<pair<bool,CirGate*>>& getFins() const {return fins;}
+   const multiset<CirGate*>& getFouts() const {return fouts;}
+   //bool eraseFin( CirGate* target );
+   //bool eraseFout( CirGate* target );
+
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> (ifNotVert, in) ); }
    void addFout( CirGate* out) { fouts.insert( out ); }
    bool noFanout() { return fouts.empty(); }
 
+
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
    static void setRefMark() { refMark++; }
-   void dfsTraverse() const;
-   bool dfsSearch(CirGate* target) const;
+   void dfsTraverseToIn( bool ifprint, vector<unsigned> &pathIds ) const;
+   void dfsTraverseToOut( bool ifprint, vector<unsigned> &pathGates ) const;
    static unsigned count;
 
 private:
@@ -72,7 +79,6 @@ protected:
    unsigned gid;
    string name;
    vector<pair<bool,CirGate*>> fins;
-   //unordered_multiset<CirGate*> fouts;
    multiset<CirGate*> fouts;
 };
 
