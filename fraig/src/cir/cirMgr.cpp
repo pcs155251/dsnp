@@ -167,10 +167,6 @@ compareGateGate( const CirGate* g0, const CirGate* g1 )
 /**************************************************************/
 CirMgr::~CirMgr()
 {
-   //for (unsigned i=0; i!=gates.size(); ++i)
-   //{
-   //   delete gates[i];
-   //}
    for ( map<unsigned,CirGate*>::iterator it=gates.begin(); it!=gates.end(); ++it)
    {
       delete it->second;
@@ -181,18 +177,6 @@ CirGate*
 CirMgr::getGate(unsigned gid) const 
 { 
    //TODO make sure is sorted before getGate
-   //TODO may have problem when declaring as const functions
-   /*
-   vector<CirGate*>::const_iterator pos = lower_bound( gates.begin(), gates.end(), gid, compareGateId);
-   if ( pos==gates.end() || (*pos)->getId()!=gid )
-   {
-      return 0;
-   }
-   else
-   {
-      return (*pos);
-   }
-   */
    map<unsigned,CirGate*>::const_iterator pos = gates.find( gid );
    if ( pos==gates.end() )
    {
