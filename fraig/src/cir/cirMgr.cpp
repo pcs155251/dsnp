@@ -20,6 +20,8 @@
 
 using namespace std;
 
+const bool IFDEBUG = false;
+
 // TODO: Implement memeber functions for class CirMgr
 
 /*******************************/
@@ -151,15 +153,9 @@ parseError(CirParseError err)
 /*    for sorting gates                                       */
 /**************************************************************/
 bool
-compareGateId( const CirGate* g0, const unsigned g1Id )
+CompareGate::operator()(const CirGate* lgate, const CirGate* rgate) const
 {
-   return ( g0->getId() < g1Id );
-}
-
-bool
-compareGateGate( const CirGate* g0, const CirGate* g1 )
-{
-   return ( g0->getId() < g1->getId() );
+   return ( lgate->getId() < rgate->getId() );
 }
 
 /**************************************************************/
@@ -217,7 +213,7 @@ CirMgr::readCircuit(const string& fileName)
    getline( iss, tmpstring, ' ');//A
    andN = stoi( tmpstring );
 
-   cerr<<"adding const gate"<<endl;
+   if (IFDEBUG) cerr<<"adding const gate"<<endl;
    gates.insert( pair<unsigned,CirGate*> (0,new CirConGate()) );
    pins.reserve( inN );
    pouts.reserve( outN );
@@ -231,7 +227,7 @@ CirMgr::readCircuit(const string& fileName)
       getline( inFile, tmpstring );
       lit = stoi( tmpstring );
       tmp = new CirPiGate(lineNo+1,lit/2);
-      cerr<<"pi "<<lit/2<<endl;
+      if (IFDEBUG) cerr<<"pi "<<lit/2<<endl;
       gates.insert( pair<unsigned,CirGate*> (lit/2,tmp) );
       pins.push_back( tmp );
       ++lineNo;
@@ -244,7 +240,7 @@ CirMgr::readCircuit(const string& fileName)
       getline( inFile, tmpstring );
       lit = stoi( tmpstring );
       tmp = new CirPoGate(lineNo+1,maxN+i+1);
-      cerr<<"po "<<maxN+i+1<<endl;
+      if (IFDEBUG) cerr<<"po "<<maxN+i+1<<endl;
       gates.insert( pair<unsigned,CirGate*> (maxN+i+1,tmp) );
       pouts.push_back( tmp );
       toPoLi[i] = lit;
@@ -265,7 +261,7 @@ CirMgr::readCircuit(const string& fileName)
       getline( isand, tmpstring, ' ');
       in2Li[i] = stoi( tmpstring );
       tmp = new CirAigGate(lineNo+1,lit/2);
-      cerr<<"aig "<<lit/2<<endl;
+      if (IFDEBUG)cerr<<"aig "<<lit/2<<endl;
       gates.insert( pair<unsigned,CirGate*> (lit/2,tmp) );
       aigs.push_back( tmp );
 
@@ -294,41 +290,56 @@ CirMgr::readCircuit(const string& fileName)
    }
 
    //detected undefined gate
-   cerr<<"L1: ";
-   for (unsigned i=0; i!=in1Li.size(); ++i) cerr<<in1Li[i]/2<<", ";
-   cerr<<endl;
-   cerr<<"L2: ";
-   for (unsigned i=0; i!=in2Li.size(); ++i) cerr<<in2Li[i]/2<<", ";
-   cerr<<endl;
+   if (IFDEBUG)
+   {
+      cerr<<"L1: ";
+      for (unsigned i=0; i!=in1Li.size(); ++i) cerr<<in1Li[i]/2<<", ";
+      cerr<<endl;
+      cerr<<"L2: ";
+      for (unsigned i=0; i!=in2Li.size(); ++i) cerr<<in2Li[i]/2<<", ";
+      cerr<<endl;
 
-   cerr<<"gate: ";
-   for (auto it=gates.begin(); it!=gates.end(); ++it ) cerr<<it->first<<", ";
-   cerr<<endl;
+      cerr<<"gate: ";
+      for (auto it=gates.begin(); it!=gates.end(); ++it ) cerr<<it->first<<", ";
+      cerr<<endl;
+   }
       
-   cerr<<"aig: ";
+   if (IFDEBUG) cerr<<"aig: ";
    for (unsigned i=0; i!=aigs.size(); ++i)
    { 
-      cerr<<aigs[i]->getId()<<endl;
+      if (IFDEBUG) cerr<<aigs[i]->getId()<<endl;
       bool ifFloatFin = false;
-      if (getGate(in1Li[i]/2)==0)
+      CirGate* gate1 = getGate(in1Li[i]/2);
+      if (gate1==0)
       {
          tmp = new CirFloGate(0,in1Li[i]/2);
-         cerr<<"undef1 "<<in1Li[i]/2<<endl;
+         if (IFDEBUG) cerr<<"undef1 "<<in1Li[i]/2<<endl;
          gates.insert( pair<unsigned,CirGate*> (in1Li[i]/2,tmp) );
          floats.push_back( tmp );
          ifFloatFin = true;
+      } 
+      else if (gate1->getTypeStr()=="UNDEF")
+      {
+         ifFloatFin = true;
       } else {}
-      if (getGate(in2Li[i]/2)==0)
+
+      CirGate* gate2 = getGate(in2Li[i]/2);
+      if (gate2==0)
       {
          tmp = new CirFloGate(0,in2Li[i]/2);
-         cerr<<"undef2 "<<in2Li[i]/2<<endl;
+         if (IFDEBUG) cerr<<"undef2 "<<in2Li[i]/2<<endl;
          gates.insert( pair<unsigned,CirGate*> (in2Li[i]/2,tmp) );
          floats.push_back( tmp );
          ifFloatFin = true;
+      }
+      else if (gate2->getTypeStr()=="UNDEF")
+      {
+         ifFloatFin = true;
       } else {}
+
       if (ifFloatFin)
       {
-         floatfins.push_back( aigs[i] );
+         floatfins.insert( aigs[i] );
       } else {}
    }
 
@@ -383,27 +394,25 @@ CirMgr::readCircuit(const string& fileName)
          CirGate::setRefMark();
          if ( !(it->second->dfsSearch(gates.begin()->second)) )//const can serve as pin here
          {
-            floatfins.push_back(it->second);
+            floatfins.insert(it->second);
          } else {}
       } else {}
    }
-   sort( floatfins.begin(), floatfins.end(), compareGateGate );
 
    for (unsigned i=0; i!=pins.size(); ++i)
    {
       if (pins[i]->noFanout())
       {
-         notused.push_back(pins[i]);
+         notused.insert(pins[i]);
       } else {}
    }
    for (unsigned i=0; i!=aigs.size(); ++i)
    {
       if (aigs[i]->noFanout())
       {
-         notused.push_back(aigs[i]);
+         notused.insert(aigs[i]);
       } else {}
    }
-   sort( notused.begin(), notused.end(), compareGateGate );
 
    return true;
 }
@@ -440,7 +449,7 @@ CirMgr::printNetlist() const
    CirGate::setRefMark();
 
    cout<<endl;
-   for (size_t i=0; i!=pouts.size(); ++i)
+   for (unsigned i=0; i!=pouts.size(); ++i)
    {
       pouts[i]->dfsTraverse();
    }
@@ -471,22 +480,22 @@ CirMgr::printPOs() const
 void
 CirMgr::printFloatGates() const
 {
-   if (floatfins.size()!=0)
+   if (!floatfins.empty())
    {
       cout << "Gates with floating fanin(s):";
-      for (unsigned i=0; i!=floatfins.size(); ++i)
+      for (set<CirGate*,CompareGate>::iterator it=floatfins.begin(); it!=floatfins.end(); ++it )
       {
-         cout<<" "<<floatfins[i]->getId();
+         cout<<" "<<(*it)->getId();
       }
       cout << endl;
    } else {}
 
-   if (notused.size()!=0)
+   if (!notused.empty())
    {
       cout << "Gates defined but not used  :";
-      for (unsigned i=0; i!=notused.size(); ++i)
+      for (set<CirGate*,CompareGate>::iterator it=notused.begin(); it!=notused.end(); ++it )
       {
-         cout<<" "<<notused[i]->getId();
+         cout<<" "<<(*it)->getId();
       }
       cout << endl;
    } else {}

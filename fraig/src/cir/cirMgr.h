@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -22,6 +23,11 @@ using namespace std;
 #include "cirDef.h"
 
 extern CirMgr *cirMgr;
+
+struct CompareGate
+{
+   bool operator()(const CirGate* lgate, const CirGate* rgate) const;
+};
 
 class CirMgr
 {
@@ -70,8 +76,10 @@ private:
    vector<CirGate*> pouts;
    vector<CirGate*> aigs;
    vector<CirGate*> floats;
-   vector<CirGate*> floatfins;
-   vector<CirGate*> notused;
+   //vector<CirGate*> floatfins;
+   //vector<CirGate*> notused;
+   set<CirGate*,CompareGate> floatfins;
+   set<CirGate*,CompareGate> notused;
 };
 
 #endif // CIR_MGR_H
