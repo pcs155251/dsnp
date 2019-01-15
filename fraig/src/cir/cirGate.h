@@ -20,6 +20,7 @@
 using namespace std;
 
 // TODO: Feel free to define your own classes, variables, or functions.
+size_t bitFlip( const size_t& val, bool ifnv );
 
 class CirGate;
 
@@ -59,6 +60,10 @@ public:
    void eraseOneFin( bool ifNotVert, CirGate* target );
    void eraseOneFout( bool ifNotVert, CirGate* target );
    bool noFanout() { return fouts.empty(); }
+   //for simulation
+   virtual size_t simulate() const { return value; }
+   size_t getValue() const { return value; }
+   void setValue( size_t valueIn ) const { value = valueIn; }
 
    //CirGate* dfsTraverseInExp( bool& curStates, stack<unsigned>& curFin, stack<CirGate*>& refGates ); 
    void replace( bool ifNotVert, CirGate* substitute );
@@ -86,6 +91,7 @@ protected:
    CirGate(unsigned lineNoIn, unsigned gidIn): lineNo(lineNoIn), gid(gidIn) {} //for derived class constructor
    unsigned gid;
    string name;
+   mutable size_t value=0;
 };
 
 class CirPiGate: public CirGate
@@ -107,6 +113,7 @@ public:
    ~CirPoGate() {}
    virtual void printGate() const;
    virtual string getTypeStr() const { return "PO"; }
+   virtual size_t simulate() const { value = bitFlip( fins[0].second->getValue(), fins[0].first ); return value; }
 private:
 };
 
@@ -118,6 +125,13 @@ public:
    ~CirAigGate() {}
    virtual void printGate() const;
    virtual string getTypeStr() const { return "AIG"; }
+   virtual size_t simulate() const 
+   { 
+      value = bitFlip( fins[0].second->getValue(), fins[0].first )
+             &bitFlip( fins[1].second->getValue(), fins[1].first )
+             ;
+      return value; 
+   }
 private:
 };
 
