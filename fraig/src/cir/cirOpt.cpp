@@ -43,13 +43,13 @@ CirMgr::sweep()
    for (unsigned i=0; i!=pouts.size(); ++i )
    {
       if (IFDEBUG) cerr<<"pin: "<<pouts[i]->getId()<<endl<<"erase:";
-      vector<unsigned> pathIds;
+      vector<CirGate*> pathGates;
       CirGate::setRefMark();
-      pouts[i]->dfsTraverseToIn(false,pathIds);
-      for (unsigned ii=0; ii!=pathIds.size(); ++ii)
+      pouts[i]->dfsTraverseToIn(pathGates);
+      for (unsigned ii=0; ii!=pathGates.size(); ++ii)
       {
-         if (IFDEBUG) cerr<<" "<<pathIds[ii];
-         tmpGates.erase(pathIds[ii]);
+         if (IFDEBUG) cerr<<" "<<pathGates[ii];
+         tmpGates.erase(pathGates[ii]->getId());
       }
       if (IFDEBUG) cerr<<endl;
    }
@@ -74,13 +74,13 @@ CirMgr::sweep()
       for (vector<pair<bool,CirGate*>>::iterator it=remG->fins.begin(); it!=remG->fins.end(); ++it )
       {
          CirGate* target = it->second;
-         target->eraseFout( remG );
+         target->eraseAllFout( remG );
       }
       //remove fanout connection
-      for (multiset<CirGate*>::iterator it=remG->fouts.begin(); it!=remG->fouts.end(); ++it )
+      for (vector<pair<bool,CirGate*>>::iterator it=remG->fouts.begin(); it!=remG->fouts.end(); ++it )
       {
-         CirGate* target = *it;
-         target->eraseFin( remG );
+         CirGate* target = it->second;
+         target->eraseAllFin( remG );
       }
       //remove gate
       gates.erase( remG->getId() );
@@ -88,6 +88,8 @@ CirMgr::sweep()
       floats.erase( remG );
       floatfins.erase( remG );
    }
+
+   updateDfsList( );
 }
 
 // Recursively simplifying from POs;
@@ -96,6 +98,11 @@ CirMgr::sweep()
 void
 CirMgr::optimize()
 {
+   for (unsigned i=0; i!=dfsList.size(); ++i)
+   {
+      dfsList[i]->trivialOpt( gates.begin()->second );
+   }
+   updateDfsList( );
 }
 
 /***************************************************/

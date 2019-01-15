@@ -49,19 +49,26 @@ public:
    string getNameStr() const { return name; }
    //my operation for fanins and fanouts
    vector<pair<bool,CirGate*>> fins;
-   multiset<CirGate*> fouts;
+   vector<pair<bool,CirGate*>> fouts;
+   //multiset<CirGate*> fouts;
 
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> (ifNotVert, in) ); }
-   void addFout( CirGate* out) { fouts.insert( out ); }
-   void eraseFin( CirGate* target );
-   void eraseFout( CirGate* target );
+   //void addFout( CirGate* out) { fouts.insert( out ); }
+   void addFout(bool ifNotVert, CirGate* out) { fouts.push_back( pair<bool,CirGate*> (ifNotVert, out) ); }
+   void eraseAllFin( CirGate* target );
+   void eraseAllFout( CirGate* target );
+   void eraseOneFin( bool ifNotVert, CirGate* target );
+   void eraseOneFout( bool ifNotVert, CirGate* target );
    bool noFanout() { return fouts.empty(); }
 
    //CirGate* dfsTraverseInExp( bool& curStates, stack<unsigned>& curFin, stack<CirGate*>& refGates ); 
+   void replace( bool ifNotVert, CirGate* substitute );
+   void trivialOpt( CirGate* constGate );
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
    static void setRefMark() { refMark++; }
-   void dfsTraverseToIn( bool ifprint, vector<unsigned> &pathIds ) const;
+   void dfsTraverseToIn( vector<CirGate*> &dfsList );
+   //void dfsTraverseOpt( CirGate* constGate );
    void dfsTraverseToOut( bool ifprint, vector<unsigned> &pathGates ) const;
    static unsigned count;
 

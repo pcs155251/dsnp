@@ -122,6 +122,7 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
       if (level > 0)
       {
          this->setMarked();
+         /*
          for ( multiset<CirGate*>::const_iterator it = fouts.cbegin(); it != fouts.cend(); ++it )
          {
             bool ifNotVert; 
@@ -135,6 +136,11 @@ CirGate::reportFanout(int level, unsigned offset, bool iftrue ) const
             }
             //assert( finIt != (*it)->fins.cend() );
             (*it)->reportFanout( level-1, offset+1, ifNotVert );
+         }
+         */
+         for ( vector<pair<bool,CirGate*>>::const_iterator it = fouts.cbegin(); it != fouts.cend(); ++it )
+         {
+            it->second->reportFanout( level-1, offset+1, it->first );
          }
       } else {}
    }
@@ -174,28 +180,109 @@ CirGate::dfsTraverseInExp( bool& curStates, stack<unsigned>& curFins, stack<CirG
 */
 
 void
-CirGate::dfsTraverseToIn( bool ifprint, vector<unsigned> &pathIds ) const 
+CirGate::dfsTraverseToIn( vector<CirGate*> &dfsList )
 {
    for ( vector<pair<bool,CirGate*>>::const_iterator it=fins.begin(); it!=fins.end(); ++it)
    {
       if (!(it->second->isMarked()))
       {
-         it->second->dfsTraverseToIn( ifprint, pathIds );
+         it->second->dfsTraverseToIn( dfsList );
       } else {}
    }
    this->setMarked();
-   pathIds.push_back( this->getId() );
+   dfsList.push_back( this );
+}
 
-   if (ifprint && this->getTypeStr()!="UNDEF")
+string 
+exclamation( bool ifNotVert )
+{
+   if ( ifNotVert )
+   {  return "";
+   }
+   else
    {
-      this->printGate();
-      ++count;
-   } else {}
+      return "!";
+   }
+}
+
+void
+CirGate::replace( bool ifNotVert, CirGate* substitute )
+{
+   cout<<"Simplifying: "<< substitute->getId() <<" merging "<<exclamation(ifNotVert)<< this->getId() <<"..."<<endl;
+   substitute->eraseAllFout( this );
+   /*
+   for ( multiset<CirGate*>::iterator it=this->fouts.begin(); it!=this->fouts.end(); ++it )
+   {
+      (*it)->eraseFin( this );
+      (*it)->addFin( ifNotVert, substitute );
+      substitute->addFout( *it );
+   }
+   */
+   for ( vector<pair<bool,CirGate*>>::iterator it=this->fouts.begin(); it!=this->fouts.end(); ++it )
+   {
+      bool newPhase = ( (!it->first)&&(!ifNotVert) ) || ( it->first && ifNotVert );
+      it->second->eraseOneFin( it->first, this );
+      it->second->addFin( newPhase, substitute );
+      substitute->addFout( newPhase, it->second );
+   }
+   delete this;
+} 
+
+void
+CirGate::trivialOpt( CirGate* constGate )
+{
+   //check same fanins
+   if ( this->fins.size() < 2)
+   {
+      //do nothing for PI, PO
+   }
+   else if ( this->fins[0].second == this->fins[1].second )
+   {
+      if (this->fins[0].first == this->fins[1].first)
+      {
+         this->replace( this->fins[0].first, this->fins[0].second );
+      }
+      else 
+      {
+         this->replace( true, constGate );
+      }
+   }
+   else if ( this->fins[0].second == constGate )
+   {
+      if ( this->fins[0].first == true )
+      {
+         this->fins[1].second->eraseAllFout( this );
+         this->replace( true, constGate );
+      }
+      else
+      {
+         constGate->eraseAllFout( this );
+         this->replace( this->fins[1].first, this->fins[1].second );
+      }
+   } 
+   else if ( this->fins[1].second == constGate )
+   {
+      if ( this->fins[1].first == true )
+      {
+         this->fins[0].second->eraseAllFout( this );
+         this->replace( true, constGate );
+      }
+      else
+      {
+         constGate->eraseAllFout( this );
+         this->replace( this->fins[0].first, this->fins[0].second );
+      }
+   }
+   else 
+   {
+      //no trivial optimization, do nothing
+   }
 }
 
 void
 CirGate::dfsTraverseToOut( bool ifprint, vector<unsigned> &pathIds ) const 
 {
+  /*
    for ( multiset<CirGate*>::const_iterator it=fouts.begin(); it!=fouts.end(); ++it)
    {
       if ( (!(*it)->isMarked()) )
@@ -203,6 +290,14 @@ CirGate::dfsTraverseToOut( bool ifprint, vector<unsigned> &pathIds ) const
          (*it)->dfsTraverseToOut( ifprint, pathIds );
       } else {}
    }
+   */
+   for ( vector<pair<bool,CirGate*>>::const_iterator it=fouts.begin(); it!=fouts.end(); ++it)
+   {
+      if ( (!it->second->isMarked()) )
+      {
+         it->second->dfsTraverseToOut( ifprint, pathIds );
+      } else {}
+   }
    this->setMarked();
    pathIds.push_back( this->getId() );
 
@@ -214,7 +309,7 @@ CirGate::dfsTraverseToOut( bool ifprint, vector<unsigned> &pathIds ) const
 }
 
 void
-CirGate::eraseFin( CirGate* target )
+CirGate::eraseAllFin( CirGate* target )
 {
    for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); )//do nothing here )
    {
@@ -230,9 +325,54 @@ CirGate::eraseFin( CirGate* target )
 }
 
 void
-CirGate::eraseFout( CirGate* target )
+CirGate::eraseAllFout( CirGate* target )
 {
-   fouts.erase( target );
+   for ( vector<pair<bool,CirGate*>>::iterator it=fouts.begin(); it!=fouts.end(); )//do nothing here )
+   {
+      if ( it->second==target)
+      {
+         it = fouts.erase(it);
+      }
+      else
+      {
+         ++it;
+      }
+   }
+   //fouts.erase( target );
+}
+
+void
+CirGate::eraseOneFin( bool ifNotVert, CirGate* target )
+{
+   for ( vector<pair<bool,CirGate*>>::iterator it=fins.begin(); it!=fins.end(); )//do nothing here )
+   {
+      if ( it->first==ifNotVert && it->second==target )
+      {
+         it = fins.erase(it);
+         break;
+      }
+      else
+      {
+         ++it;
+      }
+   }
+}
+
+void
+CirGate::eraseOneFout( bool ifNotVert, CirGate* target )
+{
+   for ( vector<pair<bool,CirGate*>>::iterator it=fouts.begin(); it!=fouts.end(); )//do nothing here )
+   {
+      if ( it->first==ifNotVert && it->second==target )
+      {
+         it = fouts.erase(it);
+         break;
+      }
+      else
+      {
+         ++it;
+      }
+   }
 }
 
 /**************************************/

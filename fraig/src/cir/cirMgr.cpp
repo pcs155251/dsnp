@@ -357,7 +357,8 @@ CirMgr::readCircuit(const string& fileName)
       if ( getGate(addId)!= 0)
       {
          pouts[i]->addFin( ifnoRevert, getGate(addId) );
-         getGate(addId)->addFout( getGate(pouts[i]->getId()) );
+         //getGate(addId)->addFout( getGate(pouts[i]->getId()) );
+         getGate(addId)->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
       }
       else
       {
@@ -365,7 +366,8 @@ CirMgr::readCircuit(const string& fileName)
          gates.insert( pair<unsigned,CirGate*> (addId,tmp) );
          floats.insert( tmp );
          pouts[i]->addFin( ifnoRevert, tmp );
-         tmp->addFout( getGate(pouts[i]->getId()) );
+         //tmp->addFout( getGate(pouts[i]->getId()) );
+         tmp->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
       }
    }
    //connect and gates
@@ -377,8 +379,10 @@ CirMgr::readCircuit(const string& fileName)
       bool f2nonRevert = !((in2Li[i])%2);
       aigtemps[i]->addFin( f1nonRevert, getGate(f1Id) );
       aigtemps[i]->addFin( f2nonRevert, getGate(f2Id) );
-      getGate(f1Id)->addFout( getGate(aigtemps[i]->getId()) );
-      getGate(f2Id)->addFout( getGate(aigtemps[i]->getId()) );
+      //getGate(f1Id)->addFout( getGate(aigtemps[i]->getId()) );
+      //getGate(f2Id)->addFout( getGate(aigtemps[i]->getId()) );
+      getGate(f1Id)->addFout( f1nonRevert, getGate(aigtemps[i]->getId()) );
+      getGate(f2Id)->addFout( f2nonRevert, getGate(aigtemps[i]->getId()) );
    }
 
    //find bad gates
@@ -427,6 +431,8 @@ CirMgr::readCircuit(const string& fileName)
       aigs.insert( aigtemps[i] );
    }
 
+   updateDfsList( );
+
    return true;
 }
 
@@ -459,40 +465,15 @@ CirMgr::printNetlist() const
 {
    //reset count and mark first;
    CirGate::count=0;
-   CirGate::setRefMark();
-
    cout<<endl;
-   vector<unsigned> pathIds;
-   for (unsigned i=0; i!=pouts.size(); ++i)
+   for ( unsigned i=0; i!=dfsList.size(); ++i)
    {
-      pouts[i]->dfsTraverseToIn( true, pathIds );
-   }
-   /*
-   CirGate::count = 0;
-   cout<<endl;
-   for (unsigned i=0; i!=pouts.size(); ++i)
-   {
-      bool curStates;
-      stack<CirGate*> refGates;
-      stack<unsigned> curFins;
-      curFins.push( 0 );
-      CirGate* token = pouts[i];
-      CirGate* lastGate = 0;
-      CirGate::setRefMark();
-
-      while ( token!=0 )
+      if ( dfsList[i]->getTypeStr()!="UNDEF" )
       {
-         lastGate = token;
-         token = lastGate->dfsTraverseInExp( curStates, curFins, refGates );
-         if ( token==0 ) break;
-         if ( curStates==true&&lastGate->getTypeStr()!="UNDEF" )
-         {
-            lastGate->printGate();
-            ++CirGate::count;
-         } else {}
-      }
+         dfsList[i]->printGate();
+         ++CirGate::count;
+      } else {}
    }
-   */
 }
 
 void
@@ -554,5 +535,20 @@ CirMgr::writeAag(ostream& outfile) const
 void
 CirMgr::writeGate(ostream& outfile, CirGate *g) const
 {
+}
+
+//
+//private
+//
+
+void
+CirMgr::updateDfsList() 
+{
+   dfsList.clear();
+   CirGate::setRefMark();
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      pouts[i]->dfsTraverseToIn( dfsList );
+   }
 }
 

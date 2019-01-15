@@ -77,6 +77,9 @@ private:
    set<CirGate*,CompareGateId> floats;
    set<CirGate*,CompareGateId> floatfins;
    set<CirGate*,CompareGateId> notused;
+   vector<CirGate*> dfsList;
+   //implementation
+   void updateDfsList( );
 };
 
 #endif // CIR_MGR_H
