@@ -184,7 +184,25 @@ CirGate::replace( bool ifNotVert, CirGate* substitute )
       it->second->addFin( newPhase, substitute );
       substitute->addFout( newPhase, it->second );
    }
-   delete this;
+   //delete this;
+} 
+
+void
+CirGate::merge( CirGate* substitute )
+{
+   cout<<"Strashing: "<< substitute->getId() <<" merging "<< this->getId() <<"..."<<endl;
+   for ( vector<pair<bool,CirGate*>>::iterator it=this->fins.begin(); it!=this->fins.end(); ++it )
+   {
+      it->second->eraseAllFout( this );
+   }
+   for ( vector<pair<bool,CirGate*>>::iterator it=this->fouts.begin(); it!=this->fouts.end(); ++it )
+   {
+      //bool newPhase = ( (!it->first)&&(!ifNotVert) ) || ( it->first && ifNotVert );
+      it->second->eraseOneFin( it->first, this );
+      it->second->addFin( it->first, substitute );
+      substitute->addFout( it->first, it->second );
+   }
+   //delete this;
 } 
 
 CirGate*

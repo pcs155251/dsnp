@@ -604,8 +604,15 @@ CirMgr::removeGates( const vector<CirGate*>& removeList )
    {
       CirGate* remG = removeList[i];
       gates.erase( remG->getId() );
+
+      //unsigned before = aigs.size();
+      //cout<<"erasing "<<remG->getId();
       aigs.erase( remG );
+      //unsigned after = aigs.size();
+      //cout<<" "<<before-after<<endl;
+
       floats.erase( remG );
+      delete remG;
    }
 }
 

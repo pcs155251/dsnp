@@ -21,18 +21,57 @@ using namespace std;
 // To use HashMap ADT, you should define your own HashKey class.
 // It should at least overload the "()" and "==" operators.
 //
-// class HashKey
-// {
-// public:
-//    HashKey() {}
-// 
-//    size_t operator() () const { return 0; }
-// 
-//    bool operator == (const HashKey& k) const { return true; }
-// 
-// private:
-// };
-//
+class HashKey
+{
+public:
+   HashKey() {}
+   HashKey( void* ptr0, void* ptr1, bool ifnv0, bool ifnv1 ): _ptr0(ptr0), _ptr1(ptr1), _ifnv0(ifnv0), _ifnv1(ifnv1) 
+   {
+      if ( _ptr0 < _ptr1 )
+      {
+         swap( _ptr0, _ptr1 );
+         swap( _ifnv0, _ifnv1 );
+      } else {}
+   }
+
+   size_t operator() (const HashKey& k) const 
+   {
+      uintptr_t i0 = ((reinterpret_cast<uintptr_t> (k._ptr0))<<1) + k._ifnv0;
+      uintptr_t i1 = ((reinterpret_cast<uintptr_t> (k._ptr1))<<1) + k._ifnv1;
+      return i0 + i1;
+   }
+
+   bool operator == (const HashKey& k) const 
+   { 
+      if      ( this->_ptr0!=k._ptr0 ) 
+      {
+         return false;
+      }
+      else if ( this->_ptr1!=k._ptr1 ) 
+      {
+         return false;
+      }
+      else if ( this->_ifnv0!=k._ifnv0 ) 
+      {
+         return false;
+      }
+      else if ( this->_ifnv1!=k._ifnv1 ) 
+      {
+         return false;
+      }
+      else
+      {
+         return true;
+      }
+   }
+
+   void* _ptr0;
+   void* _ptr1;
+   bool _ifnv0;
+   bool _ifnv1;
+private:
+};
+
 template <class HashKey, class HashData>
 class HashMap
 {

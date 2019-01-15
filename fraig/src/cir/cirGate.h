@@ -62,6 +62,7 @@ public:
 
    //CirGate* dfsTraverseInExp( bool& curStates, stack<unsigned>& curFin, stack<CirGate*>& refGates ); 
    void replace( bool ifNotVert, CirGate* substitute );
+   void merge( CirGate* substitute );
    CirGate* trivialOpt( CirGate* constGate );
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
