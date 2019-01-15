@@ -318,7 +318,6 @@ CirMgr::readCircuit(const string& fileName)
          tmp = new CirFloGate(0,id1);
          if (IFDEBUG) cerr<<"undef1 "<<id1<<endl;
          gates.insert( pair<unsigned,CirGate*> (id1,tmp) );
-         //floats.push_back( tmp );
          floats.insert( tmp );
          ifFloatFin = true;
       } 
@@ -357,7 +356,6 @@ CirMgr::readCircuit(const string& fileName)
       if ( getGate(addId)!= 0)
       {
          pouts[i]->addFin( ifnoRevert, getGate(addId) );
-         //getGate(addId)->addFout( getGate(pouts[i]->getId()) );
          getGate(addId)->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
       }
       else
@@ -366,7 +364,6 @@ CirMgr::readCircuit(const string& fileName)
          gates.insert( pair<unsigned,CirGate*> (addId,tmp) );
          floats.insert( tmp );
          pouts[i]->addFin( ifnoRevert, tmp );
-         //tmp->addFout( getGate(pouts[i]->getId()) );
          tmp->addFout( ifnoRevert, getGate(pouts[i]->getId()) );
       }
    }
@@ -379,8 +376,6 @@ CirMgr::readCircuit(const string& fileName)
       bool f2nonRevert = !((in2Li[i])%2);
       aigtemps[i]->addFin( f1nonRevert, getGate(f1Id) );
       aigtemps[i]->addFin( f2nonRevert, getGate(f2Id) );
-      //getGate(f1Id)->addFout( getGate(aigtemps[i]->getId()) );
-      //getGate(f2Id)->addFout( getGate(aigtemps[i]->getId()) );
       getGate(f1Id)->addFout( f1nonRevert, getGate(aigtemps[i]->getId()) );
       getGate(f2Id)->addFout( f2nonRevert, getGate(aigtemps[i]->getId()) );
    }
@@ -410,26 +405,12 @@ CirMgr::readCircuit(const string& fileName)
       } else {}
    }
 
-   for (unsigned i=0; i!=pins.size(); ++i)
-   {
-      if (pins[i]->noFanout())
-      {
-         notused.insert(pins[i]);
-      } else {}
-   }
-   for (unsigned i=0; i!=aigtemps.size(); ++i)
-   {
-      if (aigtemps[i]->noFanout())
-      {
-         notused.insert(aigtemps[i]);
-      } else {}
-   }
-
    //consturct correct aig gates
    for (unsigned i=0; i!=aigtemps.size(); ++i)
    {
       aigs.insert( aigtemps[i] );
    }
+   updateNotUsed( );
 
    updateDfsList( );
 
@@ -549,6 +530,82 @@ CirMgr::updateDfsList()
    for (unsigned i=0; i!=pouts.size(); ++i)
    {
       pouts[i]->dfsTraverseToIn( dfsList );
+   }
+}
+
+void 
+CirMgr::updateFloatFins( )//only adding new element
+{
+   floatfins.clear();
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      if (pouts[i]->hasFloatFin())
+      {
+         floatfins.insert(pouts[i]);
+      } else {}
+   }
+   for ( set<CirGate*,CompareGateId>::iterator it = aigs.begin(); it !=aigs.end(); ++it )
+   {
+      if ((*it)->hasFloatFin())
+      {
+         floatfins.insert(*it);
+      } else {}
+   }
+
+   map<unsigned,CirGate*> tmpGates = gates;
+   vector<CirGate*> tmpPins = pins;
+   tmpPins.push_back( gates.begin()->second );
+   for (unsigned i=0; i!=tmpPins.size(); ++i )
+   {
+      if (IFDEBUG) cerr<<"pin: "<<tmpPins[i]->getId()<<endl<<"erase:";
+      vector<unsigned> pathIds;
+      CirGate::setRefMark();
+      tmpPins[i]->dfsTraverseToOut(false,pathIds);
+      for (unsigned ii=0; ii!=pathIds.size(); ++ii)
+      {
+         if (IFDEBUG) cerr<<" "<<pathIds[ii];
+         tmpGates.erase(pathIds[ii]);
+      }
+      if (IFDEBUG) cerr<<endl;
+   }
+   for (map<unsigned,CirGate*>::iterator it=tmpGates.begin(); it!=tmpGates.end(); ++it)
+   {
+      if ( it->second->getTypeStr()!="UNDEF" )
+      {
+         floatfins.insert( it->second );
+      } else {}
+   }
+}
+
+void
+CirMgr::updateNotUsed( )//will reset and recheck 
+{
+   notused.clear();
+   for (unsigned i=0; i!=pins.size(); ++i)
+   {
+      if (pins[i]->noFanout())
+      {
+         notused.insert(pins[i]);
+      } else {}
+   }
+   for ( set<CirGate*,CompareGateId>::iterator it = aigs.begin(); it !=aigs.end(); ++it )
+   {
+      if ((*it)->noFanout())
+      {
+         notused.insert(*it);
+      } else {}
+   }
+}
+
+void
+CirMgr::removeGates( const vector<CirGate*>& removeList )
+{
+   for (unsigned i=0; i!=removeList.size(); ++i)
+   {
+      CirGate* remG = removeList[i];
+      gates.erase( remG->getId() );
+      aigs.erase( remG );
+      floats.erase( remG );
    }
 }
 

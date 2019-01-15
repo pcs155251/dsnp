@@ -80,6 +80,9 @@ private:
    vector<CirGate*> dfsList;
    //implementation
    void updateDfsList( );
+   void updateFloatFins( );
+   void updateNotUsed( );
+   void removeGates( const vector<CirGate*>& removeList );
 };
 
 #endif // CIR_MGR_H

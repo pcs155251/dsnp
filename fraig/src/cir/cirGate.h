@@ -50,7 +50,6 @@ public:
    //my operation for fanins and fanouts
    vector<pair<bool,CirGate*>> fins;
    vector<pair<bool,CirGate*>> fouts;
-   //multiset<CirGate*> fouts;
 
    void addFin(bool ifNotVert, CirGate* in) { fins.push_back( pair<bool,CirGate*> (ifNotVert, in) ); }
    //void addFout( CirGate* out) { fouts.insert( out ); }
@@ -63,13 +62,13 @@ public:
 
    //CirGate* dfsTraverseInExp( bool& curStates, stack<unsigned>& curFin, stack<CirGate*>& refGates ); 
    void replace( bool ifNotVert, CirGate* substitute );
-   void trivialOpt( CirGate* constGate );
+   CirGate* trivialOpt( CirGate* constGate );
    bool isMarked() const {return (mark==refMark);}
    void setMarked() const { mark = refMark; }
    static void setRefMark() { refMark++; }
    void dfsTraverseToIn( vector<CirGate*> &dfsList );
-   //void dfsTraverseOpt( CirGate* constGate );
    void dfsTraverseToOut( bool ifprint, vector<unsigned> &pathGates ) const;
+   bool hasFloatFin( ) const;
    static unsigned count;
 
 private:

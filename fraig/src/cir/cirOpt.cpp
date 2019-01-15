@@ -82,13 +82,11 @@ CirMgr::sweep()
          CirGate* target = it->second;
          target->eraseAllFin( remG );
       }
-      //remove gate
-      gates.erase( remG->getId() );
-      aigs.erase( remG );
-      floats.erase( remG );
+      //not sure about this line but removeGates doesn't include removing from floating fanins
       floatfins.erase( remG );
    }
 
+   removeGates( removeList );
    updateDfsList( );
 }
 
@@ -98,10 +96,19 @@ CirMgr::sweep()
 void
 CirMgr::optimize()
 {
+   vector<CirGate*> removeList;
    for (unsigned i=0; i!=dfsList.size(); ++i)
    {
-      dfsList[i]->trivialOpt( gates.begin()->second );
+      CirGate* removed = dfsList[i]->trivialOpt( gates.begin()->second );
+      if ( removed != 0 )
+      {
+         removeList.push_back( removed );
+      } else {}
    }
+
+   removeGates( removeList );
+   updateNotUsed( );
+   updateFloatFins( );
    updateDfsList( );
 }
 
