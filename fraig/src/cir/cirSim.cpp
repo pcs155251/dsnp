@@ -15,7 +15,6 @@
 #include "cirGate.h"
 #include "util.h"
 
-#include <bitset>
 
 using namespace std;
 
@@ -45,8 +44,6 @@ size_t randomSizet()
 void
 CirMgr::randomSim()
 {
-   //unordered_map<size_t,gateSet*> fecGroups;
-
    if ( !ifsimulated )
    {
    //add all gates in dfsList into one fecGroups
@@ -55,13 +52,13 @@ CirMgr::randomSim()
       {
          group0->insert( dfsList[i] );
       }
-      fecGroups.insert( pair<size_t,gateSet*> ( 0, group0 ) );
+      fecGroups.insert( group0 );
    } else {}
 
    //simulate
    unsigned maxSim = 64;
    unsigned oldSize = 0;
-   unsigned stopSize = 2;
+   unsigned stopSize = 0;
    unsigned isim=0;
    for ( ; isim!=maxSim; isim++ )
    {
@@ -76,42 +73,38 @@ CirMgr::randomSim()
       {
          dfsList[i]->simulate();
       }
-      //update value of fec groups
-      unordered_map<size_t,gateSet*> newFecGroups;
-      for ( unordered_map<size_t,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
-      {
-         newFecGroups.insert( pair<size_t,gateSet*> ( (*onegroup->second->begin())->getValue(), onegroup->second ) );
-      }
-      fecGroups = newFecGroups;
+
       //detect fecgroups
-      newFecGroups.clear();
-      for ( unordered_map<size_t,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
+      fecgs newFecGroups;
+      for ( fecgs::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
       {
-         unordered_map<size_t,gateSet*> tempFecGroups;
-         for ( gateSet::iterator onegate = (*(onegroup->second)).begin(); onegate!=(*(onegroup->second)).end(); ++onegate )
+         fecgs tempFecGroups;
+         for ( gateSet::iterator onegate = (*onegroup)->begin(); onegate!=(*onegroup)->end(); ++onegate )
          {
-            unordered_map<size_t,gateSet*>::iterator resultGroup = tempFecGroups.find( (*onegate)->getValue() );
+            gateSet tempGroup;
+            tempGroup.insert( *onegate );
+            fecgs::iterator resultGroup = tempFecGroups.find( &tempGroup );
             if ( resultGroup != tempFecGroups.end() )
             {
-               resultGroup->second->insert( *onegate );
+               (*resultGroup)->insert( *onegate );
             } 
             else 
             {
                gateSet* newGroup = new gateSet;
                newGroup->insert( *onegate );
-               tempFecGroups.insert( pair<size_t,gateSet*> ( (*onegate)->getValue(), newGroup ) );
+               tempFecGroups.insert( newGroup );
             }
          }
          //collect valid fec groups
-         for ( unordered_map<size_t,gateSet*>::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
+         for ( fecgs::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
          {
-            if ( onenewG->second->size() > 1 )
+            if ( (*onenewG)->size() > 1 )
             {
                newFecGroups.insert( *onenewG );
             } 
             else 
             {
-               delete onenewG->second;
+               delete (*onenewG);
             }
          }
       }

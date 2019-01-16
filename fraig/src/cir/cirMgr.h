@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <set>
 #include <string>
 #include <fstream>
@@ -31,6 +32,20 @@ struct CompareGateId
 {
    bool operator()(const CirGate* lgate, const CirGate* rgate) const;
 };
+
+struct gateSetPHasher
+{
+   size_t
+   operator() (const gateSet* in ) const;
+};
+
+struct gateSetPComper
+{
+   bool
+   operator() (const gateSet* in0, const gateSet* in1 ) const;
+};
+
+typedef unordered_set<gateSet*,gateSetPHasher,gateSetPComper> fecgs;
 
 class CirMgr
 {
@@ -68,6 +83,8 @@ public:
    void printFECPairs() const;
    void writeAag(ostream&) const;
    void writeGate(ostream&, CirGate*) const;
+   //my
+   void printFECPairs( unsigned gid ) const;
 
 private:
    ofstream           *_simLog;
@@ -81,7 +98,8 @@ private:
    gateSet floatfins;
    gateSet notused;
    vector<CirGate*> dfsList;
-   unordered_map<size_t,gateSet*> fecGroups;
+   //unordered_map<size_t,gateSet*> fecGroups;
+   fecgs fecGroups;
    //implementation
    void updateDfsList( );
    void updateFloatFins( );

@@ -16,11 +16,13 @@
 #include <iostream>
 #include "cirDef.h"
 #include "sat.h"
+#include <bitset>
 
 using namespace std;
 
 // TODO: Feel free to define your own classes, variables, or functions.
 size_t bitFlip( const size_t& val, bool ifnv );
+size_t convertLastToOne( const size_t& val );
 
 class CirGate;
 
@@ -127,8 +129,8 @@ public:
    virtual string getTypeStr() const { return "AIG"; }
    virtual size_t simulate() const 
    { 
-      value = bitFlip( fins[0].second->getValue(), fins[0].first )
-             &bitFlip( fins[1].second->getValue(), fins[1].first )
+      value = ( bitFlip( fins[0].second->getValue(), fins[0].first ) )
+             &( bitFlip( fins[1].second->getValue(), fins[1].first ) )
              ;
       return value; 
    }

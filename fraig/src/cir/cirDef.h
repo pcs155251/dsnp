@@ -17,8 +17,10 @@ using namespace std;
 // TODO: define your own typedef or enum
 
 class CirGate;
-struct CompareGateId;
 class CirMgr;
 class SatSolver;
+struct CompareGateId;
+struct gateSetPComper;
+struct gateSetPHasher;
 
 #endif // CIR_DEF_H

@@ -158,6 +158,18 @@ CompareGateId::operator()(const CirGate* lgate, const CirGate* rgate) const
    return ( lgate->getId() < rgate->getId() );
 }
 
+size_t
+gateSetPHasher::operator() (const gateSet* in ) const
+{
+   return hash<size_t>() (convertLastToOne((*in->begin())->getValue()) );
+}
+
+bool
+gateSetPComper::operator() (const gateSet* in0, const gateSet* in1 ) const
+{
+   return ( convertLastToOne((*in0->begin())->getValue()) == convertLastToOne((*in1->begin())->getValue()) );
+}
+
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
@@ -506,6 +518,37 @@ CirMgr::printFloatGates() const
 void
 CirMgr::printFECPairs() const
 {
+}
+
+void
+CirMgr::printFECPairs( unsigned gid ) const
+{
+   CirAigGate tmpGate(1,1);
+   CirGate* oneGate = getGate( gid );
+   size_t thisValue = oneGate->getValue();
+   tmpGate.setValue( thisValue );
+   bool last = thisValue&1;
+   gateSet tmpGroup;
+   tmpGroup.insert( &tmpGate );
+   fecgs::const_iterator theGroup = fecGroups.find( &tmpGroup );
+   if ( theGroup != fecGroups.end() )
+   {
+      for ( gateSet::const_iterator theGate=(*theGroup)->cbegin(); theGate!=(*theGroup)->cend(); ++theGate )
+      {
+         cout << " ";
+         if ( ((*theGate)->getValue()&1) == last )
+         {
+            cout<<(*theGate)->getId();
+         }
+         else
+         {
+            cout<<"!"<<(*theGate)->getId();
+         }
+      }
+   } 
+   else
+   {
+   }
 }
 
 void

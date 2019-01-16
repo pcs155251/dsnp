@@ -14,6 +14,7 @@
 #include "cirGate.h"
 #include "cirMgr.h"
 #include "util.h"
+#include <bitset>
 
 using namespace std;
 
@@ -28,6 +29,14 @@ size_t bitFlip( const size_t& val, bool ifnv )
       return val;
 }
 
+size_t convertLastToOne( const size_t& val )
+{
+   if (val&1)
+      return val;
+   else
+      return ~val;
+}
+
 extern CirMgr *cirMgr;
 
 unsigned CirGate::count = 0;
@@ -39,13 +48,27 @@ unsigned CirGate::refMark = 0;
 void
 CirGate::reportGate() const
 {
-   cout<<"=================================================="<<endl;
+   cout<<"================================================================================"<<endl;
    string allName = (getNameStr()=="")? "" : "\""+getNameStr()+"\"";
    string tmp = "= "+getTypeStr()+"("+to_string(this->gid)+")"+allName+", line "+to_string(this->getLineNo());
-   tmp = tmp + string(49-tmp.length(), ' ');
-   tmp = tmp + "=\n";
-   cout<<tmp;
-   cout<<"=================================================="<<endl;
+   cout<<tmp<<endl;
+   cout<<"= FECs:";
+   cirMgr->printFECPairs( this->getId() );
+   cout<<endl;
+
+   cout<<"= Value: ";
+   bitset<64> vvv = this->getValue();
+   for (unsigned i=0; i!=64; ++i)
+   {
+      if ( i!=0 && i%8==0 ) 
+      {
+         cout<<"_";
+      }
+      cout<<vvv[63-i];
+   }
+
+   cout<<endl;
+   cout<<"================================================================================"<<endl;
 }
 
 void
