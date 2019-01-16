@@ -59,10 +59,14 @@ CirMgr::randomSim()
    } else {}
 
    //simulate
-   unsigned maxSim = 128;
-   for ( unsigned isim=0; isim!=maxSim; isim++ )
+   unsigned maxSim = 64;
+   unsigned oldSize = 0;
+   unsigned stopSize = 2;
+   unsigned isim=0;
+   for ( ; isim!=maxSim; isim++ )
    {
-      cout<<"Total #FEC Group = "<<fecGroups.size()<<endl;
+      unsigned newSize = fecGroups.size();
+      cout<<"Total #FEC Group = "<<newSize<<endl;
       for ( unsigned i=0; i!=pins.size(); ++i )
       {
          size_t rn = randomSizet();
@@ -73,14 +77,21 @@ CirMgr::randomSim()
          dfsList[i]->simulate();
       }
       //update value of fec groups
-      //detect fecgroups
+      unordered_map<size_t,gateSet*> newFecGroups;
       for ( unordered_map<size_t,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
       {
-         unordered_map<size_t,gateSet*> newFecGroups;
+         newFecGroups.insert( pair<size_t,gateSet*> ( (*onegroup->second->begin())->getValue(), onegroup->second ) );
+      }
+      fecGroups = newFecGroups;
+      //detect fecgroups
+      newFecGroups.clear();
+      for ( unordered_map<size_t,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
+      {
+         unordered_map<size_t,gateSet*> tempFecGroups;
          for ( gateSet::iterator onegate = (*(onegroup->second)).begin(); onegate!=(*(onegroup->second)).end(); ++onegate )
          {
-            unordered_map<size_t,gateSet*>::iterator resultGroup = newFecGroups.find( (*onegate)->getValue() );
-            if ( resultGroup != newFecGroups.end() )
+            unordered_map<size_t,gateSet*>::iterator resultGroup = tempFecGroups.find( (*onegate)->getValue() );
+            if ( resultGroup != tempFecGroups.end() )
             {
                resultGroup->second->insert( *onegate );
             } 
@@ -88,20 +99,33 @@ CirMgr::randomSim()
             {
                gateSet* newGroup = new gateSet;
                newGroup->insert( *onegate );
-               newFecGroups.insert( pair<size_t,gateSet*> ( (*onegate)->getValue(), newGroup ) );
+               tempFecGroups.insert( pair<size_t,gateSet*> ( (*onegate)->getValue(), newGroup ) );
             }
          }
          //collect valid fec groups
-         for ( unordered_map<size_t,gateSet*>::iterator onenewG=newFecGroups.begin(); onenewG!=newFecGroups.end(); ++onenewG )
+         for ( unordered_map<size_t,gateSet*>::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
          {
             if ( onenewG->second->size() > 1 )
             {
-               fecGroups.insert( *onenewG );
-            } else {}
+               newFecGroups.insert( *onenewG );
+            } 
+            else 
+            {
+               delete onenewG->second;
+            }
          }
       }
+      fecGroups = newFecGroups;
+      if ( abs(oldSize-newSize) < stopSize )
+      {
+         break;
+      } 
+      else 
+      {
+         oldSize = newSize;
+      }
    }
-   cout<<64*maxSim<<" patterns simulated."<<endl;
+   cout<<64*isim<<" patterns simulated."<<endl;
 }
 
 void
