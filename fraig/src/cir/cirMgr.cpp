@@ -485,7 +485,7 @@ CirMgr::printFloatGates() const
    if (!floatfins.empty())
    {
       cout << "Gates with floating fanin(s):";
-      for (set<CirGate*,CompareGateId>::iterator it=floatfins.begin(); it!=floatfins.end(); ++it )
+      for (gateSet::iterator it=floatfins.begin(); it!=floatfins.end(); ++it )
       {
          cout<<" "<<(*it)->getId();
       }
@@ -495,7 +495,7 @@ CirMgr::printFloatGates() const
    if (!notused.empty())
    {
       cout << "Gates defined but not used  :";
-      for (set<CirGate*,CompareGateId>::iterator it=notused.begin(); it!=notused.end(); ++it )
+      for (gateSet::iterator it=notused.begin(); it!=notused.end(); ++it )
       {
          cout<<" "<<(*it)->getId();
       }
@@ -544,7 +544,7 @@ CirMgr::updateFloatFins( )//only adding new element
          floatfins.insert(pouts[i]);
       } else {}
    }
-   for ( set<CirGate*,CompareGateId>::iterator it = aigs.begin(); it !=aigs.end(); ++it )
+   for ( gateSet::iterator it = aigs.begin(); it !=aigs.end(); ++it )
    {
       if ((*it)->hasFloatFin())
       {
@@ -588,7 +588,7 @@ CirMgr::updateNotUsed( )//will reset and recheck
          notused.insert(pins[i]);
       } else {}
    }
-   for ( set<CirGate*,CompareGateId>::iterator it = aigs.begin(); it !=aigs.end(); ++it )
+   for ( gateSet::iterator it = aigs.begin(); it !=aigs.end(); ++it )
    {
       if ((*it)->noFanout())
       {
@@ -604,13 +604,7 @@ CirMgr::removeGates( const vector<CirGate*>& removeList )
    {
       CirGate* remG = removeList[i];
       gates.erase( remG->getId() );
-
-      //unsigned before = aigs.size();
-      //cout<<"erasing "<<remG->getId();
       aigs.erase( remG );
-      //unsigned after = aigs.size();
-      //cout<<" "<<before-after<<endl;
-
       floats.erase( remG );
       delete remG;
    }

@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <string>
 #include <fstream>
@@ -23,6 +24,8 @@ using namespace std;
 #include "cirDef.h"
 
 extern CirMgr *cirMgr;
+
+typedef set<CirGate*,CompareGateId> gateSet;
 
 struct CompareGateId
 {
@@ -73,16 +76,18 @@ private:
    map<unsigned,CirGate*> gates;
    vector<CirGate*> pins;
    vector<CirGate*> pouts;
-   set<CirGate*,CompareGateId> aigs;
-   set<CirGate*,CompareGateId> floats;
-   set<CirGate*,CompareGateId> floatfins;
-   set<CirGate*,CompareGateId> notused;
+   gateSet aigs;
+   gateSet floats;
+   gateSet floatfins;
+   gateSet notused;
    vector<CirGate*> dfsList;
+   unordered_map<size_t,gateSet*> fecGroups;
    //implementation
    void updateDfsList( );
    void updateFloatFins( );
    void updateNotUsed( );
    void removeGates( const vector<CirGate*>& removeList );
+   bool ifsimulated=false;
 };
 
 #endif // CIR_MGR_H
