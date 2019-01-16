@@ -50,8 +50,12 @@ CirMgr::randomSim()
       gateSet* group0 = new gateSet;
       for ( unsigned i=0; i!=dfsList.size(); ++i )
       {
-         group0->insert( dfsList[i] );
+         if ( dfsList[i]->getTypeStr()!="PO"&&dfsList[i]->getTypeStr()!="PI" )
+         {
+            group0->insert( dfsList[i] );
+         } else {}
       }
+      group0->insert( gates[0] );
       fecGroups.insert( group0 );
    } else {}
 
@@ -119,11 +123,107 @@ CirMgr::randomSim()
       }
    }
    cout<<64*isim<<" patterns simulated."<<endl;
+   ifsimulated  = true;
 }
 
 void
 CirMgr::fileSim(ifstream& patternFile)
 {
+   if ( !ifsimulated )
+   {
+   //add all gates in dfsList into one fecGroups
+      gateSet* group0 = new gateSet;
+      for ( unsigned i=0; i!=dfsList.size(); ++i )
+      {
+         if ( dfsList[i]->getTypeStr()!="PO"&&dfsList[i]->getTypeStr()!="PI" )
+         {
+            group0->insert( dfsList[i] );
+         } else {}
+      }
+      group0->insert( gates[0] );
+      fecGroups.insert( group0 );
+   } else {}
+   //printFECPairs();
+
+   //load patterns
+   vector<string> patterns( pins.size() );
+   char s;
+   unsigned iii=0;
+   while( patternFile.get(s) )
+   {
+      if ( s=='0'||s=='1')
+      {
+         patterns[iii].push_back(s);
+         ++iii;
+         if (iii==patterns.size())
+         {
+            iii=0;
+         } else {}
+      }
+   }
+
+   //simulate
+   unsigned maxSim = patterns[0].size()/64;
+   if ( patterns[0].size()%64!=0 )
+   { 
+      maxSim++;
+   } else {}
+   for ( unsigned isim=0; isim!=maxSim; isim++ )
+   {
+      for ( unsigned i=0; i!=pins.size(); ++i )
+      {
+         string tmpstr = patterns[i].substr( 64*isim, 64 );
+         if ( tmpstr.size() < 64 )
+         {
+            tmpstr.append( '0', 64-tmpstr.size() );
+         } else {}
+
+         pins[i]->setValue( size_t(stoul(tmpstr, 0, 2)) );
+      }
+      for ( unsigned i=0; i!=dfsList.size(); ++i )
+      {
+         dfsList[i]->simulate();
+      }
+
+      //detect fecgroups
+      fecgs newFecGroups;
+      for ( fecgs::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
+      {
+         fecgs tempFecGroups;
+         for ( gateSet::iterator onegate = (*onegroup)->begin(); onegate!=(*onegroup)->end(); ++onegate )
+         {
+            gateSet tempGroup;
+            tempGroup.insert( *onegate );
+            fecgs::iterator resultGroup = tempFecGroups.find( &tempGroup );
+            if ( resultGroup != tempFecGroups.end() )
+            {
+               (*resultGroup)->insert( *onegate );
+            } 
+            else 
+            {
+               gateSet* newGroup = new gateSet;
+               newGroup->insert( *onegate );
+               tempFecGroups.insert( newGroup );
+            }
+         }
+         //collect valid fec groups
+         for ( fecgs::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
+         {
+            if ( (*onenewG)->size() > 1 )
+            {
+               newFecGroups.insert( *onenewG );
+            } 
+            else 
+            {
+               delete (*onenewG);
+            }
+         }
+      }
+      fecGroups = newFecGroups;
+   }
+
+   cout<<patterns[0].size()<<" patterns simulated."<<endl;
+   ifsimulated  = true;
 }
 
 /*************************************************/

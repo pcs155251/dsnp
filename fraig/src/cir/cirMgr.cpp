@@ -161,13 +161,13 @@ CompareGateId::operator()(const CirGate* lgate, const CirGate* rgate) const
 size_t
 gateSetPHasher::operator() (const gateSet* in ) const
 {
-   return hash<size_t>() (convertLastToOne((*in->begin())->getValue()) );
+   return hash<size_t>() ( convertLastToOne( (*(in->begin()))->getValue()) );
 }
 
 bool
 gateSetPComper::operator() (const gateSet* in0, const gateSet* in1 ) const
 {
-   return ( convertLastToOne((*in0->begin())->getValue()) == convertLastToOne((*in1->begin())->getValue()) );
+   return ( convertLastToOne((*(in0->begin()))->getValue()) == convertLastToOne((*(in1->begin()))->getValue()) );
 }
 
 /**************************************************************/
@@ -178,6 +178,10 @@ CirMgr::~CirMgr()
    for ( map<unsigned,CirGate*>::iterator it=gates.begin(); it!=gates.end(); ++it)
    {
       delete it->second;
+   }
+   for (fecgs::iterator it=fecGroups.begin(); it!=fecGroups.end(); ++it)
+   {
+      delete (*it);
    }
 }
 
@@ -518,6 +522,75 @@ CirMgr::printFloatGates() const
 void
 CirMgr::printFECPairs() const
 {
+   CirGate::setRefMark();
+   unsigned counter=0;
+   cout<<"#FECGroups: "<<fecGroups.size()<<endl;
+   if (true)
+   {
+      cout<<"coeenst gate"<<endl;
+      CirAigGate tmpGate(1,1);
+      size_t thisValue = 0;
+      tmpGate.setValue( thisValue );
+      gateSet tmpGroup;
+      tmpGroup.insert( &tmpGate );
+      fecgs::const_iterator theGroup = fecGroups.find( &tmpGroup );
+      if ( theGroup != fecGroups.end() )
+      {
+         cout<<"["<<counter<<"]";
+         bool last = ((*((*theGroup)->cbegin()))->getValue())&1;
+         for ( gateSet::const_iterator theGate=(*theGroup)->cbegin(); theGate!=(*theGroup)->cend(); ++theGate )
+         {
+            cout << " ";
+            if ( ((*theGate)->getValue()&1) == last )
+            {
+               cout<<(*theGate)->getId();
+            }
+            else
+            {
+               cout<<"!"<<(*theGate)->getId();
+            }
+            (*theGate)->setMarked();
+         }
+         cout<<endl;
+         ++counter;
+      }
+      else {}
+   } else {}
+   for ( gateSet::const_iterator agate = aigs.cbegin(); agate!=aigs.cend(); ++agate )
+   {
+      if ( (*agate)->isMarked() )
+      {
+      }
+      else
+      {
+         CirAigGate tmpGate(1,1);
+         size_t thisValue = (*agate)->getValue();
+         tmpGate.setValue( thisValue );
+         gateSet tmpGroup;
+         tmpGroup.insert( &tmpGate );
+         fecgs::const_iterator theGroup = fecGroups.find( &tmpGroup );
+         if ( theGroup != fecGroups.end() )
+         {
+            cout<<"["<<counter<<"]";
+            bool last = ((*((*theGroup)->cbegin()))->getValue())&1;
+            for ( gateSet::const_iterator theGate=(*theGroup)->cbegin(); theGate!=(*theGroup)->cend(); ++theGate )
+            {
+               cout << " ";
+               if ( ((*theGate)->getValue()&1) == last )
+               {
+                  cout<<(*theGate)->getId();
+               }
+               else
+               {
+                  cout<<"!"<<(*theGate)->getId();
+               }
+               (*theGate)->setMarked();
+            }
+            cout<<endl;
+            ++counter;
+         } else {}
+      }
+   }
 }
 
 void
