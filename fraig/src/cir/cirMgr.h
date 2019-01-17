@@ -100,6 +100,7 @@ private:
    vector<CirGate*> dfsList;
    map<unsigned,gateSet*> fecGroups;
    //implementation
+   void updateFECGroups();
    void updateDfsList( );
    void updateFloatFins( );
    void updateNotUsed( );
