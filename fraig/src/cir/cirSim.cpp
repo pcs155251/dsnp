@@ -44,6 +44,7 @@ size_t randomSizet()
 void
 CirMgr::randomSim()
 {
+  /*
    if ( !ifsimulated )
    {
    //add all gates in dfsList into one fecGroups
@@ -124,6 +125,7 @@ CirMgr::randomSim()
    }
    cout<<64*isim<<" patterns simulated."<<endl;
    ifsimulated  = true;
+   */
 }
 
 void
@@ -141,9 +143,8 @@ CirMgr::fileSim(ifstream& patternFile)
          } else {}
       }
       group0->insert( gates[0] );
-      fecGroups.insert( group0 );
+      fecGroups.insert( pair<unsigned,gateSet*> (gates[0]->getId(),group0) );
    } else {}
-   //printFECPairs();
 
    //load patterns
    vector<string> patterns( pins.size() );
@@ -186,11 +187,11 @@ CirMgr::fileSim(ifstream& patternFile)
       }
 
       //detect fecgroups
-      fecgs newFecGroups;
-      for ( fecgs::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
+      map<unsigned,gateSet*> newFecGroups;
+      for ( map<unsigned,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
       {
          fecgs tempFecGroups;
-         for ( gateSet::iterator onegate = (*onegroup)->begin(); onegate!=(*onegroup)->end(); ++onegate )
+         for ( gateSet::iterator onegate = onegroup->second->begin(); onegate!=onegroup->second->end(); ++onegate )
          {
             gateSet tempGroup;
             tempGroup.insert( *onegate );
@@ -209,10 +210,10 @@ CirMgr::fileSim(ifstream& patternFile)
          //collect valid fec groups
          for ( fecgs::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
          {
-            assert( newFecGroups.find( *onenewG )==newFecGroups.end() );
+            //assert( newFecGroups.find( *onenewG )==newFecGroups.end() );
             if ( (*onenewG)->size() > 1 )
             {
-               newFecGroups.insert( *onenewG );
+               newFecGroups.insert( pair<unsigned,gateSet*> ( (*(*onenewG)->begin())->getId() ,*onenewG) );
             } 
             else 
             {
@@ -221,7 +222,6 @@ CirMgr::fileSim(ifstream& patternFile)
          }
       }
       fecGroups = newFecGroups;
-      printFECPairs();
    }
 
    cout<<patterns[0].size()<<" patterns simulated."<<endl;

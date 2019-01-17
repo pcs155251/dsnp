@@ -33,11 +33,6 @@ struct CompareGateId
    bool operator()(const CirGate* lgate, const CirGate* rgate) const;
 };
 
-struct CompareSetHeadId
-{
-   bool operator()(const gateSet* lset, const gateSet* rgate) const;
-};
-
 struct gateSetPHasher
 {
    size_t
@@ -103,8 +98,8 @@ private:
    gateSet floatfins;
    gateSet notused;
    vector<CirGate*> dfsList;
-   //unordered_map<size_t,gateSet*> fecGroups;
-   fecgs fecGroups;
+   //fecgs fecGroups;
+   map<unsigned,gateSet*> fecGroups;
    //implementation
    void updateDfsList( );
    void updateFloatFins( );
