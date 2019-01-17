@@ -21,7 +21,7 @@ using namespace std;
 // TODO: Keep "CirGate::reportGate()", "CirGate::reportFanin()" and
 //       "CirGate::reportFanout()" for cir cmds. Feel free to define
 //       your own variables and functions.
-size_t bitFlip( const size_t& val, bool ifnv )
+size_t bitFlip( const size_t& val, const bool& ifnv )
 {
    if ( ifnv==false )
       return ~val;

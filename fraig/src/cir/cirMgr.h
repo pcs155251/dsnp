@@ -33,6 +33,11 @@ struct CompareGateId
    bool operator()(const CirGate* lgate, const CirGate* rgate) const;
 };
 
+struct CompareSetHeadId
+{
+   bool operator()(const gateSet* lset, const gateSet* rgate) const;
+};
+
 struct gateSetPHasher
 {
    size_t

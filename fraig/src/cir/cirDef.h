@@ -20,6 +20,7 @@ class CirGate;
 class CirMgr;
 class SatSolver;
 struct CompareGateId;
+struct CompareSetHeadId;
 struct gateSetPComper;
 struct gateSetPHasher;
 

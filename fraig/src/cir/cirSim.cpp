@@ -209,6 +209,7 @@ CirMgr::fileSim(ifstream& patternFile)
          //collect valid fec groups
          for ( fecgs::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
          {
+            assert( newFecGroups.find( *onenewG )==newFecGroups.end() );
             if ( (*onenewG)->size() > 1 )
             {
                newFecGroups.insert( *onenewG );
@@ -220,6 +221,7 @@ CirMgr::fileSim(ifstream& patternFile)
          }
       }
       fecGroups = newFecGroups;
+      printFECPairs();
    }
 
    cout<<patterns[0].size()<<" patterns simulated."<<endl;
