@@ -158,15 +158,6 @@ CompareGateId::operator()(const CirGate* lgate, const CirGate* rgate) const
    return ( lgate->getId() < rgate->getId() );
 }
 
-/*
-bool
-CompareSetHeadId::operator()(const gateSet* lset, const gateSet* rset) const;
-{
-   return ( (*lset).cbegin()->getId() < (*rset).cbegin()->getId() );
-};
-*/
-
-
 size_t
 gateSetPHasher::operator() (const gateSet* in ) const
 {
@@ -188,12 +179,10 @@ CirMgr::~CirMgr()
    {
       delete it->second;
    }
-   /*
-   for (fecgs::iterator it=fecGroups.begin(); it!=fecGroups.end(); ++it)
+   for (map<unsigned,gateSet*>::iterator it=fecGroups.begin(); it!=fecGroups.end(); ++it)
    {
-      delete (*it);
+      delete it->second;
    }
-   */
 }
 
 CirGate* 
@@ -598,11 +587,96 @@ CirMgr::printFECPairs( unsigned gid ) const
 void
 CirMgr::writeAag(ostream& outfile) const
 {
+   outfile<<"aag";
+   outfile<<" "<<pouts[0]->getId()-1;
+   outfile<<" "<<pins.size();
+   outfile<<" 0";
+   outfile<<" "<<pouts.size();
+   outfile<<" "<<aigs.size();
+   outfile<<endl;
+   for (unsigned i=0; i!=pins.size(); ++i)
+   {
+      outfile<<2*(pins[i]->getId())<<endl;
+   }
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      outfile<<2*(pouts[i]->fins[0].second->getId())+(!(pouts[i]->fins[0].first))<<endl;
+   }
+   for (unsigned i=0; i!=dfsList.size(); ++i)
+   {
+      if ( dfsList[i]->getTypeStr()=="AIG")
+      {
+         outfile<<2*(dfsList[i]->getId());
+         outfile<<" ";
+         outfile<<2*(dfsList[i]->fins[0].second->getId())+(!dfsList[i]->fins[0].first);
+         outfile<<" ";
+         outfile<<2*(dfsList[i]->fins[1].second->getId())+(!dfsList[i]->fins[1].first);
+         outfile<<endl;
+      } else {}
+   }
+   for (unsigned i=0; i!=pins.size(); ++i)
+   {
+      if ( pins[i]->getNameStr()!="" )
+      {
+         outfile<<"i"<<i<<" "<<pins[i]->getNameStr()<<endl;
+      } else {}
+   }
+   for (unsigned i=0; i!=pouts.size(); ++i)
+   {
+      if ( pouts[i]->getNameStr()!="" )
+      {
+         outfile<<"o"<<i<<" "<<pouts[i]->getNameStr()<<endl;
+      } else {}
+   }
+   outfile<<"c"<<endl;
 }
 
 void
 CirMgr::writeGate(ostream& outfile, CirGate *g) const
 {
+   vector<CirGate*> subDfs;
+   CirGate::setRefMark();
+   g->dfsTraverseToIn( subDfs );
+
+   vector<CirGate*> subPins, subAigs;
+   unsigned max = g->getId();
+   for (unsigned i=0; i!=subDfs.size(); ++i)
+   {
+      if ( subDfs[i]->getId() > max ) max = subDfs[i]->getId();
+      if ( subDfs[i]->getTypeStr()=="PI") subPins.push_back( subDfs[i] );
+      if ( subDfs[i]->getTypeStr()=="AIG") subAigs.push_back( subDfs[i] );
+   }
+
+   outfile<<"aag";
+   outfile<<" "<<max;
+   outfile<<" "<<subPins.size();
+   outfile<<" 0";
+   outfile<<" 1";
+   outfile<<" "<<subAigs.size();
+   outfile<<endl;
+   for (unsigned i=0; i!=subPins.size(); ++i)
+   {
+      outfile<<2*(subPins[i]->getId())<<endl;
+   }
+   outfile<<2*(g->getId())<<endl;
+   for (unsigned i=0; i!=subAigs.size(); ++i)
+   {
+      outfile<<2*(subAigs[i]->getId());
+      outfile<<" ";
+      outfile<<2*(subAigs[i]->fins[0].second->getId())+(!subAigs[i]->fins[0].first);
+      outfile<<" ";
+      outfile<<2*(subAigs[i]->fins[1].second->getId())+(!subAigs[i]->fins[1].first);
+      outfile<<endl;
+   }
+   for (unsigned i=0; i!=subPins.size(); ++i)
+   {
+      if ( subPins[i]->getNameStr()!="" )
+      {
+         outfile<<"i"<<i<<" "<<subPins[i]->getNameStr()<<endl;
+      } else {}
+   }
+   outfile<<"o0"<<" Gate_"<<g->getId()<<endl;
+   outfile<<"c"<<endl;
 }
 
 //

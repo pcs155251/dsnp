@@ -187,8 +187,7 @@ CirMgr::fileSim(ifstream& patternFile)
       }
 
       //detect fecgroups
-      map<unsigned,gateSet*> newFecGroups;
-      for ( map<unsigned,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); ++onegroup )
+      for ( map<unsigned,gateSet*>::iterator onegroup=fecGroups.begin(); onegroup!=fecGroups.end(); )
       {
          fecgs tempFecGroups;
          for ( gateSet::iterator onegate = onegroup->second->begin(); onegate!=onegroup->second->end(); ++onegate )
@@ -207,13 +206,15 @@ CirMgr::fileSim(ifstream& patternFile)
                tempFecGroups.insert( newGroup );
             }
          }
+         map<unsigned,gateSet*>::iterator removegroup = onegroup;
+         ++onegroup;
+         fecGroups.erase( removegroup );
          //collect valid fec groups
          for ( fecgs::iterator onenewG=tempFecGroups.begin(); onenewG!=tempFecGroups.end(); ++onenewG )
          {
-            //assert( newFecGroups.find( *onenewG )==newFecGroups.end() );
             if ( (*onenewG)->size() > 1 )
             {
-               newFecGroups.insert( pair<unsigned,gateSet*> ( (*(*onenewG)->begin())->getId() ,*onenewG) );
+               fecGroups.insert( pair<unsigned,gateSet*> ( (*(*onenewG)->begin())->getId() ,*onenewG) );
             } 
             else 
             {
@@ -221,7 +222,6 @@ CirMgr::fileSim(ifstream& patternFile)
             }
          }
       }
-      fecGroups = newFecGroups;
    }
 
    cout<<patterns[0].size()<<" patterns simulated."<<endl;

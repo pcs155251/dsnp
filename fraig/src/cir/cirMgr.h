@@ -98,7 +98,6 @@ private:
    gateSet floatfins;
    gateSet notused;
    vector<CirGate*> dfsList;
-   //fecgs fecGroups;
    map<unsigned,gateSet*> fecGroups;
    //implementation
    void updateDfsList( );

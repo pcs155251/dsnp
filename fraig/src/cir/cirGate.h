@@ -125,6 +125,7 @@ public:
    CirAigGate(unsigned lineNoIn, unsigned gidIn): CirGate(lineNoIn, gidIn) { fins.reserve(2); }
    CirAigGate() {}
    ~CirAigGate() {}
+   virtual bool isAig() const { return true; }
    virtual void printGate() const;
    virtual string getTypeStr() const { return "AIG"; }
    virtual size_t simulate() const 
