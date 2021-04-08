@@ -1,4 +1,4 @@
-# FRAIG(Functionally Reduced And-Inverter Graph
+# FRAIG (Functionally Reduced And-Inverter Graph)
 ## Disclaimer
 This is final project of NTU dsnp course instructed by Prof. Chung-Yang (Ric) Huang. The code is based on Ric's architecture.
 
