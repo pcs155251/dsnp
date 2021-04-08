@@ -14,4 +14,4 @@ FRAIG is a tool to simplify an And-Inverter Graph. It reduced the gate count by:
 * Optimize: Trivial optimization
 * Strash: Structural hash
 * Simulate: Input binary patterns to simulate the circuit and detect FEC groups
-* Fraig: Use SAT solver prove equivalene of gate pairs
+* Fraig: Use SAT solver to prove equivalene of gate pairs
