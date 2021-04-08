@@ -1,18 +1,6 @@
-# TNS algorithms
-## Introduction
-This is a collection of TNS algorithms, including:
-
-* computation of environment of 2D tensor network with translational invariance:
-    * Corner transfer matrix (CTM) for iPEPS and 3-PESS.
-    * CTM with dimension reduction technique for 3-PESS.
-    * Channel environment.
-* optimization method: 
-    * Simple update for iPEPS and PESS. 
-    * Full update for iPEPS.
-    * Variational update for iPEPS (under development).
-* auxiliary TNS functions
- 
-Where iPEPS is defined on square lattice and 3-PESS is defined on kagome lattice.
+# FRAIG(Functionally Reduced And-Inverter Graph
+## Disclaimer
+This is final project of NTU dsnp course instructed by Prof. Chung-Yang (Ric) Huang. The code is based on Ric's architecture.
 
 ## Usage
 * Requirement
